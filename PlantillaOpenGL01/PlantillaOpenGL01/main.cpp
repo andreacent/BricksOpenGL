@@ -247,6 +247,7 @@ void handleSpecialKeypress(int key, int x, int y) {
         case GLUT_KEY_LEFT:
             isLeftKeyPressed = true;
             if (!isRightKeyPressed) {
+                    plataforma -= 1;
                 if (plataforma > -6.2)
                     plataforma -= 1;
             }
@@ -254,6 +255,7 @@ void handleSpecialKeypress(int key, int x, int y) {
         case GLUT_KEY_RIGHT:
             isRightKeyPressed = true;
             if (!isLeftKeyPressed) {
+                    plataforma += 1;
                 if (plataforma < 6.2)
                     plataforma += 1;
             }
