@@ -3,12 +3,15 @@
 #include <GL\freeglut.h>
 #include <math.h>
 #include <stdlib.h>
+#include <ctime>
 
-//#include <GL/freeglut.h>
 //#include <GL/gl.h>
 
 float radio = 0.3, px = 0.0, py = -8.0; // variables de ayuda para dibujar la pelota.
 
+
+//Cosas que no están siendo usadas: 
+//Eliminar luego si no se necesitan
 bool bloqueEspecial = true; // variable booleana para determinar si un bloque es especial o no
                             // true si el bloque es especial, false si no.
 
@@ -16,16 +19,17 @@ int golpesEliminar = 0; // variable para saber con cuantos golpes se elimina la 
 
 bool bloqueBonus = false; // variable booleana para determinar si un bloque tiene bonus o no
                           // true si el bloque tiene bonus, false si no.
+//-----------------------------------------
 
-bool inicial = true, isLeftKeyPressed = false, isRightKeyPressed = false;
+bool inicial = true, isLeftKeyPressed = false, isRightKeyPressed = false, isUpKeyPressed = false;
+bool inicial1 = true;
 
 float plataforma = 0.0 ; // posicion de la plataforma
 float pelota[2] = {0.0,0.0}; //posicion de la pelota
 
 float bloques[5][7] = {{0,1,0,0,0,0,0},{0,0,1,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,1,0,0,0,1,0}}; //matriz para los bloques (creo que podria ser de int)
-int especiales[5] = {1,11,34,2,9}; //arreglo para los bloques especiales (creo que podria ser de int)
-float bonus[6] = {};      //arreglo para los bloques bonus (creo que podria ser de int)
-
+int especiales2[5] = {}; //arreglo para los bloques especiales 
+int bonus2[6] = {};   //arreglo para los bloques bonus 
 
 using namespace std;
 
@@ -73,43 +77,91 @@ void ejesCoordenada(float w) {
   glLineWidth(1.0);
 }
 
-bool buscarEspecial(int x){
+
+bool buscarEspecial(int x, int array[]){
     bool esta = false;
     int i = 0;
 
     while (i < 5){
-        if (especiales[i] == x) {
-            esta = true;
+        if (x == array[i]) {
+			esta = true;
             break;
         }
         i++;
     }
-
-    return esta;
+	return esta;
 }
 
 void generarEspeciales(){
-    srand(time(0)); //genera semilla basada en el reloj del sistema
-    int r;
+	
+	int especiales[5] = {};
+
+    srand(time(NULL)); //genera semilla basada en el reloj del sistema
+    
+	int r;
     for (int i = 0; i < 5; i++){
         r = rand()%35;
-        while( buscarEspecial(r) ) r = rand()%35;
-        especiales[i] == r;
-    }
+        while ( buscarEspecial(r,especiales)) r = rand()%35;
+		especiales[i] = r; 
+		especiales2[i] = especiales[i];
 
-    inicial = false;
+		printf("Estos son los bloques especiales %d \n", r);
+    }
+	inicial = false;
 }
 
+bool buscarBonus(int x, int array[]){
+    bool esta = false;
+    int i = 0;
+
+    while (i < 6){
+        if (x == array[i]) {
+			esta = true;
+            break;
+        }
+        i++;
+    }
+	return esta;
+}
+
+void generarBonus(){
+	
+	int bonus[6] = {};
+	int tipo[6] = {};
+
+    srand(time(NULL)); //genera semilla basada en el reloj del sistema
+    
+	int r,a;
+    for (int i = 0; i < 6; i++){
+        r = rand()%35;
+        while ( buscarBonus(r,bonus)) r = rand()%35;
+		bonus[i] = r; 
+		bonus2[i] = bonus[i];
+
+		printf("Estos son los bloques con bonus %d \n", r);
+    }
+
+	for (int j = 0; j < 6; j++){
+			a = rand()%2;	// variable para definir el tipo de bonus que tendrá cada bloque, 
+							// 0 tamaño de la plataforma, 1 velocidad de la pelota
+			tipo[j] = a;
+
+		printf("Estos son los tipos de bonus %d \n", a);
+		}
+		
+		
+	inicial1 = false; //no me he fijado para qué se usa esta variable por eso coloco otra distinta
+}
 void dibujarPlataforma() {
 
     glPushMatrix();
         glTranslatef(0.0,-8.5,0.0); 
-        glColor3f(0.0,0.0,1.0
+        glColor3f(0.0,0.0,1.0);
         glBegin(GL_LINE_LOOP);
             glVertex2f(-2.0+plataforma,0.0);
             glVertex2f(2.0+plataforma,0.0);
             glVertex2f(2.0+plataforma,-0.5);
-            glVertex2f(-2.0+p);lataforma,-0.5);
+            glVertex2f(-2.0+plataforma,-0.5);
         glEnd();
     glPopMatrix();
 
@@ -174,15 +226,25 @@ void dibujarBloque(float cx, float cy, float color){
 
 }
 
-void dibujarBloqueRoto(float cx, float cy){ //hay que dibujarlo distinto
+void dibujarBloqueRoto(float cx, float cy){ //hay que revisarlo
 
-    glColor3f(0.0,1.0,0.0);
-    glBegin(GL_LINE_LOOP);
-        glVertex2f(cx,cy);
-        glVertex2f(cx+1.5,cy);
-        glVertex2f(cx+1.5,cy-0.5);
-        glVertex2f(cx,cy-0.5);
-    glEnd();
+    glColor3f(0.8,1.0,0.8);
+	glBegin(GL_LINE_LOOP);
+		glVertex2f(cx,cy);
+		glVertex2f(cx+1.5/2,cy);
+		glVertex2f(cx+1.5/2-0.25,cy-0.15);
+		glVertex2f(cx+1.5/2+0.15,cy-0.4);
+		glVertex2f(cx+1.5/2,cy-0.5);
+		glVertex2f(cx,cy-0.5);
+	glEnd();
+	glBegin(GL_LINE_LOOP);
+		glVertex2f(cx+1.5/2+0.1,cy);
+		glVertex2f(cx+1.5,cy);
+		glVertex2f(cx+1.5,cy-0.5);
+		glVertex2f(cx+1.5/2+0.15,cy-0.5);
+		glVertex2f(cx+1.5/2+0.25,cy-0.4);
+		glVertex2f(cx+1.5/2-0.1,cy-0.15);
+	glEnd();
 
 }
 
@@ -195,13 +257,13 @@ void dibujarBloques() {
         float cx = -8.2;
         float cy = 6.0;
 
-        for (int i = 0; i < 5; i++){
+		for (int i = 0; i < 5; i++){
             for (int j = 0;j < 7;j++){
-                if ( bloques[i][j] == 0 && buscarEspecial(i*7+j) )
+                if (/*bloques[i][j] == 0 &&*/ buscarEspecial((i*7+j),especiales2) )
                     dibujarBloque(cx, cy, 1);
-                else if ( bloques[i][j] == 1 && buscarEspecial(i*7+j) )
-                    dibujarBloqueRoto(cx, cy);
-                else if(bloques[i][j] == 0) 
+                //else if (bloques[i][j] == 1 && buscarEspecial(i*7+j) )
+                //    dibujarBloqueRoto(cx, cy);
+                else if(/*bloques[i][j] == 0 &&*/ !buscarEspecial((i*7+j),especiales2)) 
                     dibujarBloque(cx, cy, 0);
                 cx = cx+ 2.5;
             }
@@ -211,6 +273,84 @@ void dibujarBloques() {
 
     glPopMatrix();
 
+}
+
+//------- Sólo falta dibujo de impacto a bloque roto, para todos los demás ya está hecha la base.
+
+// -------------------------- DIBUJOS PARA LA FORMA DE LOS BONUS  -------------------------
+
+void dibujarBonusVelocidad(float cxb1, float cyb1, float radio1){ //
+	glColor3f(1.0,0.5,0.0);
+	/*glPointSize(3.0);
+    glBegin(GL_LINE_LOOP);
+		for (float angulo = 0.0; angulo<6.0; angulo+=0.0001){
+			glVertex2f(radio1*cos(angulo) + cxb1,radio1*sin(angulo) + cyb1);
+        }
+    glEnd();*/
+	glBegin(GL_LINE_LOOP);
+		glVertex2f(0.0,0.0);
+		glVertex2f(0.7,0.0);
+		glVertex2f(0.6,-0.5);
+		glVertex2f(0.8,-0.5);
+		glVertex2f(0.5,-1.0);
+		glVertex2f(0.6,-0.6);
+		glVertex2f(0.3,-0.6);
+		glVertex2f(0.5,-0.2);
+	glEnd();
+}
+void dibujarBonusTamBase(float cxb2, float cyb2, float radio2){ // largo 0.8 en X, alto 0.2 en Y
+	
+	glColor3f(1.0,0.0,0.5);
+	/*glPointSize(3.0);
+    glBegin(GL_LINE_LOOP);
+		for (float angulo = 0.0; angulo<6.0; angulo+=0.0001){
+			glVertex2f(radio2*cos(angulo) + cxb2,radio2*sin(angulo) + cyb2);
+        }
+    glEnd();*/
+	glBegin(GL_LINE_LOOP);
+		glVertex2f(0.0,-0.2);
+		glVertex2f(0.0,-0.4);
+		glVertex2f(0.8,-0.4);
+		glVertex2f(0.8,-0.2);
+	glEnd();
+}
+
+// -------------------------------------------------------------------------------------------
+
+void moverPelota(int h){
+	if (h > 0){
+		glPushMatrix();
+
+			int anguloRotacion = 45;
+			// Rotación respecto al centro de la pelota
+			float x = pelota[0]-5,y = pelota[1]-2;
+			while (x < 20){
+				glTranslatef(x,y,0);
+				glRotatef(anguloRotacion,0.0,0.0,1);
+				glTranslatef(-pelota[0],-pelota[1],0);
+				dibujarPelota(0.3);
+				x += 1;
+				y += 1;
+			}
+			//anguloRotacion += 5;
+			
+
+		glPopMatrix();
+
+	}
+	/* //--- Completar cuando funcione bien el lado derecho!
+	else if (h < 0){
+		glPushMatrix();
+
+			int anguloRotacion = -45;
+			glTranslatef(pelota[0],pelota[1]-2,0);
+			glRotatef(anguloRotacion,0.0,0.0,1);
+			glTranslatef(-pelota[0],-pelota[1],0);
+			dibujarPelota(0.3);
+			//anguloRotacion -= 5;
+		glPopMatrix();
+	}
+	*/
 }
 
 void changeViewport(int w, int h) {
@@ -225,30 +365,14 @@ void changeViewport(int w, int h) {
     glOrtho(-10*aspectradio,10*aspectradio,-10,10,1.0,-1.0);
 }
 
-void keyboard(int key, int x, int y)
-{
-    switch (key){
-    /*case GLUT_KEY_LEFT:
-        
-    case GLUT_KEY_RIGHT:
-        
-        
-        break;
-    default:
-        break;*/
-    }
-    
-    glutPostRedisplay();
-
-}
-
 void handleSpecialKeypress(int key, int x, int y) {
     switch (key) {
         case GLUT_KEY_LEFT:
             isLeftKeyPressed = true;
             if (!isRightKeyPressed) {
-                if (plataforma > -6.2)
+                if (plataforma > -6.2){
                     plataforma -= 1;
+				}
             }
         break;
         case GLUT_KEY_RIGHT:
@@ -258,7 +382,9 @@ void handleSpecialKeypress(int key, int x, int y) {
                     plataforma += 1;
             }
         break;
+		
     }
+	glutPostRedisplay(); // Esto debe ir, si no, no funciona 
 }
 
 void handleSpecialKeyReleased(int key, int x, int y) {
@@ -269,7 +395,9 @@ void handleSpecialKeyReleased(int key, int x, int y) {
         case GLUT_KEY_RIGHT:
             isRightKeyPressed = false;
         break;
+		
     }
+	// glutPostRedisplay(); Creo que en este caso no es necesario
 }
 
 void render(){
@@ -303,28 +431,49 @@ void render(){
     glPopMatrix();*/
 
     if(inicial) generarEspeciales();
+	if(inicial1) generarBonus();
 
 //------------- Dibujamos PLATAFORMA -------------          
     dibujarPlataforma();
 
 //------------- Dibujamos PELOTA -------------
-    dibujarPelota(0.3);
+    if (!isLeftKeyPressed && !isRightKeyPressed) 
+		dibujarPelota(0.3);
+
+	glPushMatrix();
+		glColor3f(1.0,0.0,1.0);
+		glTranslatef(0.0,-8.1,0.0); 
+		glPointSize(3.0);
+		glBegin(GL_POINTS);
+			glVertex2f(0.0+0.3,0.0);
+			glVertex2f(0.0-0.3,0.0);
+			glVertex2f(0.0,0.0+0.3);
+			glVertex2f(0.0,0.0-0.3);
+		glEnd();
+	glPopMatrix();
+	
 
 //------------- Dibujamos MARCO -------------
     dibujarMarcoVerde();
 
 //------------- Dibujamos BLOQUES -------------
-    if (bloqueEspecial == true) {
-        golpesEliminar = 2;
-    }else 
-        golpesEliminar = 1;
+    
+    dibujarBloques();
 
-    glPushMatrix();
-        
-        dibujarBloques();
+//------------- Dibujo Bonus para probar -------------
 
-    glPopMatrix();
+	//dibujarBonusTamBase(0.4,-0.3,0.5);
+	//dibujarBonusVelocidad(0.4,-0.3,0.5);
+	
+	if (!isLeftKeyPressed && isRightKeyPressed) {
+		int w = 1;
+		moverPelota(w);
+	}
 
+	if (isLeftKeyPressed && !isRightKeyPressed) {
+		int s = -1;
+		moverPelota(s);
+	}
 
     
  
