@@ -17,7 +17,10 @@ int golpesEliminar = 0; // variable para saber con cuantos golpes se elimina la 
 bool bloqueBonus = false; // variable booleana para determinar si un bloque tiene bonus o no
                           // true si el bloque tiene bonus, false si no.
 
-bool inicial = true;
+bool inicial = true, isLeftKeyPressed = false, isRightKeyPressed = false;
+
+float plataforma = 0.0 ; // posicion de la plataforma
+float pelota[2] = {0.0,0.0}; //posicion de la pelota
 
 float bloques[5][7] = {{0,1,0,0,0,0,0},{0,0,1,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,1,0,0,0,1,0}}; //matriz para los bloques (creo que podria ser de int)
 int especiales[5] = {1,11,34,2,9}; //arreglo para los bloques especiales (creo que podria ser de int)
@@ -100,25 +103,27 @@ void generarEspeciales(){
 void dibujarPlataforma() {
 
     glPushMatrix();
-        glColor3f(0.0,0.0,1.0);
+        glTranslatef(0.0,-8.5,0.0); 
+        glColor3f(0.0,0.0,1.0
         glBegin(GL_LINE_LOOP);
-            glVertex2f(-2.0,-8.5);
-            glVertex2f(2.0,-8.5);
-            glVertex2f(2.0,-9.0);
-            glVertex2f(-2.0,-9.0);
+            glVertex2f(-2.0+plataforma,0.0);
+            glVertex2f(2.0+plataforma,0.0);
+            glVertex2f(2.0+plataforma,-0.5);
+            glVertex2f(-2.0+p);lataforma,-0.5);
         glEnd();
     glPopMatrix();
 
 }
 
-void dibujarPelota() {
+void dibujarPelota(float radio) {
 
     glPushMatrix();
+        glTranslatef(0.0,-8.1,0.0); 
         glColor3f(1.0,1.0,1.0);
         glPointSize(3.0);
         glBegin(GL_LINE_LOOP);
             for (float angulo = 0.0; angulo<6.0; angulo+=0.0001){
-                glVertex2f(radio*cos(angulo) + px,radio*sin(angulo) + py);
+                glVertex2f(radio*cos(angulo) + pelota[0],radio*sin(angulo) + pelota[1]);
             }
         glEnd();
     glPopMatrix();
@@ -237,6 +242,36 @@ void keyboard(int key, int x, int y)
 
 }
 
+void handleSpecialKeypress(int key, int x, int y) {
+    switch (key) {
+        case GLUT_KEY_LEFT:
+            isLeftKeyPressed = true;
+            if (!isRightKeyPressed) {
+                if (plataforma > -6.2)
+                    plataforma -= 1;
+            }
+        break;
+        case GLUT_KEY_RIGHT:
+            isRightKeyPressed = true;
+            if (!isLeftKeyPressed) {
+                if (plataforma < 6.2)
+                    plataforma += 1;
+            }
+        break;
+    }
+}
+
+void handleSpecialKeyReleased(int key, int x, int y) {
+    switch (key) {
+        case GLUT_KEY_LEFT:
+            isLeftKeyPressed = false;
+        break;
+        case GLUT_KEY_RIGHT:
+            isRightKeyPressed = false;
+        break;
+    }
+}
+
 void render(){
   float aspectradio;
   glClearColor(0.0f, 0.0f, 0.0f ,1.0f); 
@@ -273,7 +308,7 @@ void render(){
     dibujarPlataforma();
 
 //------------- Dibujamos PELOTA -------------
-    dibujarPelota();
+    dibujarPelota(0.3);
 
 //------------- Dibujamos MARCO -------------
     dibujarMarcoVerde();
@@ -319,7 +354,11 @@ int main (int argc, char** argv) {
     }
     */
 
-    glutSpecialFunc(keyboard);
+
+    glutSpecialFunc(handleSpecialKeypress);
+    glutSpecialUpFunc(handleSpecialKeyReleased);
+
+
     glutMainLoop();
     return 0;
 
