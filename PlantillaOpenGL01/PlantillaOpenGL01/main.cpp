@@ -1,11 +1,11 @@
 #include <iostream>
-#include <GL\glew.h>
-#include <GL\freeglut.h>
+//#include <GL\glew.h>
+//#include <GL\freeglut.h>
 #include <math.h>
 #include <stdlib.h>
 
-//#include <GL/freeglut.h>
-//#include <GL/gl.h>
+#include <GL/freeglut.h>
+#include <GL/gl.h>
 
 float radio = 0.3, px = 0.0, py = -8.0; // variables de ayuda para dibujar la pelota.
 
@@ -104,12 +104,12 @@ void dibujarPlataforma() {
 
     glPushMatrix();
         glTranslatef(0.0,-8.5,0.0); 
-        glColor3f(0.0,0.0,1.0
+        glColor3f(0.0,0.0,1.0);
         glBegin(GL_LINE_LOOP);
             glVertex2f(-2.0+plataforma,0.0);
             glVertex2f(2.0+plataforma,0.0);
             glVertex2f(2.0+plataforma,-0.5);
-            glVertex2f(-2.0+p);lataforma,-0.5);
+            glVertex2f(-2.0+plataforma,-0.5);
         glEnd();
     glPopMatrix();
 
@@ -247,7 +247,6 @@ void handleSpecialKeypress(int key, int x, int y) {
         case GLUT_KEY_LEFT:
             isLeftKeyPressed = true;
             if (!isRightKeyPressed) {
-                    plataforma -= 1;
                 if (plataforma > -6.2)
                     plataforma -= 1;
             }
@@ -255,7 +254,6 @@ void handleSpecialKeypress(int key, int x, int y) {
         case GLUT_KEY_RIGHT:
             isRightKeyPressed = true;
             if (!isLeftKeyPressed) {
-                    plataforma += 1;
                 if (plataforma < 6.2)
                     plataforma += 1;
             }
