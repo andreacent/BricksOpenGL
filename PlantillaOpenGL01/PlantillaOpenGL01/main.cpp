@@ -2,20 +2,26 @@
 #include <GL\glew.h>
 #include <GL\freeglut.h>
 #include <math.h>
+#include <stdlib.h>
+
+//#include <GL/freeglut.h>
+//#include <GL/gl.h>
 
 float radio = 0.3, px = 0.0, py = -8.0; // variables de ayuda para dibujar la pelota.
 
 bool bloqueEspecial = true; // variable booleana para determinar si un bloque es especial o no
-							// true si el bloque es especial, false si no.
+                            // true si el bloque es especial, false si no.
 
 int golpesEliminar = 0; // variable para saber con cuantos golpes se elimina la pelota.
 
 bool bloqueBonus = false; // variable booleana para determinar si un bloque tiene bonus o no
-						  // true si el bloque tiene bonus, false si no.
+                          // true si el bloque tiene bonus, false si no.
 
-float bloques[7][5] = {}; //matriz para los bloques (creo que podria ser de int)
-float especiales[5] = {}; //arreglo para los bloques especiales (creo que podria ser de int)
-float bonus[6] = {};	  //arreglo para los bloques bonus (creo que podria ser de int)
+bool inicial = true;
+
+float bloques[5][7] = {{0,1,0,0,0,0,0},{0,0,1,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,1,0,0,0,1,0}}; //matriz para los bloques (creo que podria ser de int)
+int especiales[5] = {1,11,34,2,9}; //arreglo para los bloques especiales (creo que podria ser de int)
+float bonus[6] = {};      //arreglo para los bloques bonus (creo que podria ser de int)
 
 
 using namespace std;
@@ -64,91 +70,141 @@ void ejesCoordenada(float w) {
   glLineWidth(1.0);
 }
 
+bool buscarEspecial(int x){
+    bool esta = false;
+    int i = 0;
+
+    while (i < 5){
+        if (especiales[i] == x) {
+            esta = true;
+            break;
+        }
+        i++;
+    }
+
+    return esta;
+}
+
+void generarEspeciales(){
+    srand(time(0)); //genera semilla basada en el reloj del sistema
+    int r;
+    for (int i = 0; i < 5; i++){
+        r = rand()%35;
+        while( buscarEspecial(r) ) r = rand()%35;
+        especiales[i] == r;
+    }
+
+    inicial = false;
+}
+
 void dibujarPlataforma() {
 
-	glPushMatrix();
-		glColor3f(0.0,0.0,1.0);
-		glBegin(GL_LINE_LOOP);
-			glVertex2f(-2.0,-8.5);
-			glVertex2f(2.0,-8.5);
-			glVertex2f(2.0,-9.0);
-			glVertex2f(-2.0,-9.0);
-		glEnd();
-	glPopMatrix();
+    glPushMatrix();
+        glColor3f(0.0,0.0,1.0);
+        glBegin(GL_LINE_LOOP);
+            glVertex2f(-2.0,-8.5);
+            glVertex2f(2.0,-8.5);
+            glVertex2f(2.0,-9.0);
+            glVertex2f(-2.0,-9.0);
+        glEnd();
+    glPopMatrix();
 
 }
 
 void dibujarPelota() {
 
-	glPushMatrix();
-		glColor3f(1.0,1.0,1.0);
-		glPointSize(3.0);
-		glBegin(GL_LINE_LOOP);
-			for (float angulo = 0.0; angulo<6.0; angulo+=0.0001){
-				glVertex2f(radio*cos(angulo) + px,radio*sin(angulo) + py);
-			}
-		glEnd();
-	glPopMatrix();
+    glPushMatrix();
+        glColor3f(1.0,1.0,1.0);
+        glPointSize(3.0);
+        glBegin(GL_LINE_LOOP);
+            for (float angulo = 0.0; angulo<6.0; angulo+=0.0001){
+                glVertex2f(radio*cos(angulo) + px,radio*sin(angulo) + py);
+            }
+        glEnd();
+    glPopMatrix();
 
 }
 
 void dibujarMarcoVerde() {
-	
-	glPushMatrix();
-	
-		glLineWidth(2.0);
-		glColor3f(0.0,1.0,0.0);
-		
-		glBegin(GL_LINE_LOOP);
-			glVertex2f(-9.0,9.5);
-			glVertex2f(9.0,9.5);
-			glVertex2f(9.0,9.0);
-			glVertex2f(-9.0,9.0);
-		glEnd();
-		
-		glBegin(GL_LINE_LOOP);
-			glVertex2f(9.0,9.5);
-			glVertex2f(9.5,9.5);
-			glVertex2f(9.5,-9.0);
-			glVertex2f(9.0,-9.0);
-		glEnd();
-		
-		glBegin(GL_LINE_LOOP);
-			glVertex2f(-9.0,9.5);
-			glVertex2f(-9.5,9.5);
-			glVertex2f(-9.5,-9.0);
-			glVertex2f(-9.0,-9.0);
-		glEnd();
+    
+    glPushMatrix();
+    
+        glLineWidth(2.0);
+        glColor3f(0.0,1.0,0.0);
+        
+        glBegin(GL_LINE_LOOP);
+            glVertex2f(-9.0,9.5);
+            glVertex2f(9.0,9.5);
+            glVertex2f(9.0,9.0);
+            glVertex2f(-9.0,9.0);
+        glEnd();
+        
+        glBegin(GL_LINE_LOOP);
+            glVertex2f(9.0,9.5);
+            glVertex2f(9.5,9.5);
+            glVertex2f(9.5,-9.0);
+            glVertex2f(9.0,-9.0);
+        glEnd();
+        
+        glBegin(GL_LINE_LOOP);
+            glVertex2f(-9.0,9.5);
+            glVertex2f(-9.5,9.5);
+            glVertex2f(-9.5,-9.0);
+            glVertex2f(-9.0,-9.0);
+        glEnd();
 
-	glPopMatrix();
+    glPopMatrix();
+
+}
+
+void dibujarBloque(float cx, float cy, float color){
+
+    glColor3f(1.0,color,0.0);
+    glBegin(GL_LINE_LOOP);
+        glVertex2f(cx,cy);
+        glVertex2f(cx+1.5,cy);
+        glVertex2f(cx+1.5,cy-0.5);
+        glVertex2f(cx,cy-0.5);
+    glEnd();
+
+}
+
+void dibujarBloqueRoto(float cx, float cy){ //hay que dibujarlo distinto
+
+    glColor3f(0.0,1.0,0.0);
+    glBegin(GL_LINE_LOOP);
+        glVertex2f(cx,cy);
+        glVertex2f(cx+1.5,cy);
+        glVertex2f(cx+1.5,cy-0.5);
+        glVertex2f(cx,cy-0.5);
+    glEnd();
 
 }
 
 void dibujarBloques() {
 
-	glPushMatrix();
-	
-		glLineWidth(2.0);
-		glColor3f(1.0,0.0,0.0);
+    glPushMatrix();
+    
+        glLineWidth(2.0);
 
-		float cx = -8.2;
-		float cy = 6.0;
+        float cx = -8.2;
+        float cy = 6.0;
 
-		for (int i = 0; i < 5; i++){
-			for (int j = 0;j < 7;j++){
-				glBegin(GL_LINE_LOOP);
-					glVertex2f(cx,cy);
-					glVertex2f(cx+1.5,cy);
-					glVertex2f(cx+1.5,cy-0.5);
-					glVertex2f(cx,cy-0.5);
-				glEnd();
-				cx = cx+ 2.5;
-			}
-			cx = -8.2;
-			cy = cy -1.25;
-		}
+        for (int i = 0; i < 5; i++){
+            for (int j = 0;j < 7;j++){
+                if ( bloques[i][j] == 0 && buscarEspecial(i*7+j) )
+                    dibujarBloque(cx, cy, 1);
+                else if ( bloques[i][j] == 1 && buscarEspecial(i*7+j) )
+                    dibujarBloqueRoto(cx, cy);
+                else if(bloques[i][j] == 0) 
+                    dibujarBloque(cx, cy, 0);
+                cx = cx+ 2.5;
+            }
+            cx = -8.2;
+            cy = cy -1.25;
+        }
 
-	glPopMatrix();
+    glPopMatrix();
 
 }
 
@@ -167,17 +223,17 @@ void changeViewport(int w, int h) {
 void keyboard(int key, int x, int y)
 {
     switch (key){
-	/*case GLUT_KEY_LEFT:
-		
-	case GLUT_KEY_RIGHT:
-		
-		
-		break;
-	default:
-		break;*/
-	}
-	
-	glutPostRedisplay();
+    /*case GLUT_KEY_LEFT:
+        
+    case GLUT_KEY_RIGHT:
+        
+        
+        break;
+    default:
+        break;*/
+    }
+    
+    glutPostRedisplay();
 
 }
 
@@ -211,30 +267,31 @@ void render(){
     glEnd();
     glPopMatrix();*/
 
+    if(inicial) generarEspeciales();
 
 //------------- Dibujamos PLATAFORMA -------------          
-	dibujarPlataforma();
+    dibujarPlataforma();
 
 //------------- Dibujamos PELOTA -------------
-	dibujarPelota();
+    dibujarPelota();
 
 //------------- Dibujamos MARCO -------------
-	dibujarMarcoVerde();
+    dibujarMarcoVerde();
 
 //------------- Dibujamos BLOQUES -------------
-	if (bloqueEspecial == true) {
-		golpesEliminar = 2;
-	}else 
-		golpesEliminar = 1;
+    if (bloqueEspecial == true) {
+        golpesEliminar = 2;
+    }else 
+        golpesEliminar = 1;
 
-	glPushMatrix();
-		
-		dibujarBloques();
+    glPushMatrix();
+        
+        dibujarBloques();
 
-	glPopMatrix();
+    glPopMatrix();
 
 
-	
+    
  
 
   glFlush();
@@ -243,25 +300,27 @@ void render(){
 
 int main (int argc, char** argv) {
 
-  glutInit(&argc, argv);
+    glutInit(&argc, argv);
 
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 
-  glutInitWindowSize(800,600);
+    glutInitWindowSize(800,600);
 
-  glutCreateWindow("Opengl");
+    glutCreateWindow("Opengl");
 
-  glutReshapeFunc(changeViewport);
-  glutDisplayFunc(render);
-  
-  GLenum err = glewInit();
-  if (GLEW_OK != err) {
+    glutReshapeFunc(changeViewport);
+    glutDisplayFunc(render);
+
+    /*
+    GLenum err = glewInit();
+    if (GLEW_OK != err) {
     fprintf(stderr, "GLEW error");
     return 1;
-  }
-  
-  glutSpecialFunc(keyboard);
-  glutMainLoop();
-  return 0;
+    }
+    */
+
+    glutSpecialFunc(keyboard);
+    glutMainLoop();
+    return 0;
 
 }
