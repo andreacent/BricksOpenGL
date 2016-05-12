@@ -146,9 +146,10 @@ void generarBonus(){
           i = rand()%6;
           j = rand()%6;
         }
-        bonus[i][1] = i;
-        bonus[i][1] = j;
-        bonus[i][2] = rand()%2;
+        bonus[k][0] = i;
+        bonus[k][1] = j;
+        bonus[k][2] = rand()%2;
+        bloques[i][j] =-1;
     }   
 }
 
@@ -169,15 +170,34 @@ void dibujarBonusVelocidad(float cxb, float cyb, float radio){ //
   glEnd();
 }
 
-void dibujarBonusTamBase(float cxb, float cyb, float radio){ // largo 0.8 en X, alto 0.2 en Y
-  
-  glColor3f(1.0,0.0,0.5);
-  glBegin(GL_LINE_LOOP);
-    glVertex2f(0.0,-0.2);
-    glVertex2f(0.0,-0.4);
-    glVertex2f(0.8,-0.4);
-    glVertex2f(0.8,-0.2);
-  glEnd();
+void dibujarBonusTamBase(float x, float y){ // largo 0.8 en X, alto 0.2 en Y
+   
+    glColor3f(1.0,0.0,0.5);
+    glBegin(GL_LINE_LOOP);
+      glVertex2f(x,y-0.2);
+      glVertex2f(x,y-0.4);
+      glVertex2f(x+0.8,y-0.4);
+      glVertex2f(x+0.8,y-0.2);
+    glEnd();
+}
+
+// INCOMPLETA
+void lanzarBonus(){
+    int b;
+    for(int i; i<6; i++){
+      if(bloques[bonus[i][0]][bonus[i][1]] == -1 ){ // && bonus[i][1] >= -0.7 si el bloque se rompio
+        b = (int)bonus[i][2];      
+        switch (b) {
+          case 0:
+            dibujarBonusTamBase(bonus[i][0],bonus[i][1]);
+          break;
+          case 1:
+            dibujarBonusVelocidad(0.4,-0.3,0.5);
+          break;
+        }
+        bonus[i][1] += -0.1;
+      }
+    }
 }
 
 // -------------------- DIBUJOS BASE  ---------------------- 
@@ -350,18 +370,6 @@ bool hayChoque(float x, float y){
     return choca;
 }
 
-// INCOMPLETA
-void lanzarBonus(int i, int j, int bonus){
-    switch (bonus) {
-      case 0:
-        dibujarBonusTamBase(0.4,-0.3,0.5);
-      break;
-      case 1:
-        dibujarBonusVelocidad(0.4,-0.3,0.5);
-      break;
-    }
-}
-
 void dibujarBloques() {
 
     int esBonus;
@@ -385,17 +393,17 @@ void dibujarBloques() {
                   case 1:
                     if(buscarEspeciales(i*7+j)) dibujarBloqueRoto(cx, cy); //dibuja especiales golpeados una vez
                     else{
-                      esBonus = buscarBonus(i,j);
-                      if (esBonus > -1) lanzarBonus(i,j,esBonus);
-                      dibujarExplosion(2);
-                      bloques[i][j] = -1;
+                      //esBonus = buscarBonus(i,j);
+                      //if (esBonus > -1) lanzarBonus(i,j,esBonus);
+                      //dibujarExplosion(2);
+                      //bloques[i][j] = -1;
                     }
                   break;
                   case 2:
-                    esBonus = buscarBonus(i,j);
-                    if (esBonus > -1) lanzarBonus(i,j,esBonus);
-                    dibujarExplosion(2);
-                    bloques[i][j] = -1;
+                    //esBonus = buscarBonus(i,j);
+                    //if (esBonus > -1) lanzarBonus(i,j,esBonus);
+                    //dibujarExplosion(2);
+                    //bloques[i][j] = -1;
                   break;
                 }
 
@@ -416,6 +424,7 @@ void moverPelota(int h){
   if (h > 0){
     pelota[0] = velocidadP*cos(anguloP)+ pelota[0];
     pelota[1] = velocidadP*sin(anguloP)+ pelota[1];
+    lanzarBonus();
       
     glutTimerFunc(10,moverPelota,1);
     glutPostRedisplay();
