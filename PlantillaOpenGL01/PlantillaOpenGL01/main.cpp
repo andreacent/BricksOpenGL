@@ -1,12 +1,12 @@
 #include <iostream>
-#include <GL\glew.h>
-#include <GL\freeglut.h>
+//#include <GL\glew.h>
+//#include <GL\freeglut.h>
 #include <math.h>
 #include <stdlib.h>
 #include <ctime>
 
-//#include <GL/freeglut.h>
-//#include <GL/gl.h>
+#include <GL/freeglut.h>
+#include <GL/gl.h>
 
 /*
 Agregue unas opciones si la pelota pega de las paredes dentro de dibujarPelota, 
@@ -37,9 +37,8 @@ float plataforma = 0.0,      //posicion de la plataforma
 int bloques[5][7] = {{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},
                        {0,0,0,0,0,0,0},{0,0,0,0,0,0,0}},
     especiales[5] = {}, //arreglo para los bloques especiales 
-    bonus[6][2]= {},       //arreglo para los bloques bonus 
-    tipo[6] = {};       //arreglo para el tipo de bonus que tendrá cada bloque, 
-                        // 0 tamaño de la plataforma, 1 velocidad de la pelota
+    bonus[6][2]= {},    /*arreglo para los bloques bonus {i,j} i=bloque, 
+                        j=tipo de bono (0 tamaño de la plataforma, 1 velocidad de la pelota} */
 
 using namespace std;
 
