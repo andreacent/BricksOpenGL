@@ -37,7 +37,7 @@ float plataforma = 0.0,      //posicion de la plataforma
 int bloques[5][7] = {{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},
                        {0,0,0,0,0,0,0},{0,0,0,0,0,0,0}},
     especiales[5] = {}, //arreglo para los bloques especiales 
-    bonus[6][2]= {},    /*arreglo para los bloques bonus {i,j} i=bloque, 
+    bonus[6][2]= {};    /*arreglo para los bloques bonus {i,j} i=bloque, 
                         j=tipo de bono (0 tamaño de la plataforma, 1 velocidad de la pelota} */
 
 using namespace std;
