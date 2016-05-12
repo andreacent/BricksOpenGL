@@ -8,18 +8,28 @@
 //#include <GL/freeglut.h>
 //#include <GL/gl.h>
 
+/*
+Agregue unas opciones si la pelota pega de las paredes dentro de dibujarPelota, 
+esto para cambiar los angulos o decidir si el jugador pierde
+*/
 bool inicial = true, //true para inicializar los bonus y espaciales una sola vez
      isLeftKeyPressed = false, isRightKeyPressed = false, isUpKeyPressed = false,
      velocidad = false, //bonus de velocidad activado o desactivado
-     baseLarga = true;  //bonus de base activado o desactivado
+     baseLarga = true,  //bonus de base activado o desactivado
+     gameOver = false;
 
 float plataforma = 0.0,      //posicion de la plataforma
       pelota[2] = {0.0,0.0}, //posicion de la pelota
-      bloques[5][7] = {{0,0,1,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,1,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0}},//matriz para los bloques
-      posInicial[2][7] = {{-0.1,0.0,0.35,-0.13,-0.1,-0.04,0.0}, {-0.2,0.0,0.2,0.1,0.1,-0.17,-0.1}}; //posicion inical con lo que explotan los peazos
+      bloques[5][7] = {{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},
+                       {0,0,0,0,0,0,0},{0,0,0,0,0,0,0}},//matriz para los bloques
+      posInicial[7][2] = {{-0.1,-0.2},{0.0,0.0},{0.35,0.2},{-0.13,0.1},
+                          {-0.1,0.1},{-0.04,-0.17},{0.0,-0.1}}, //posicion inical con lo que explotan los peazos
+      velocidadP = 0.1, //velocidad de la pelota
+      anguloP = 90.0,          //angulo con el que se mueve la pelota
+      radioP = 0.3;     //radio de la pelota
 
 int especiales[5] = {}, //arreglo para los bloques especiales 
-    bonus[6] = {},      //arreglo para los bloques bonus 
+    bonus[6]= {},       //arreglo para los bloques bonus 
     tipo[6] = {};       //arreglo para el tipo de bonus que tendrá cada bloque, 
                         // 0 tamaño de la plataforma, 1 velocidad de la pelota
 
@@ -123,12 +133,6 @@ void generarBonus(){
 
 void dibujarBonusVelocidad(float cxb, float cyb, float radio){ //
   glColor3f(1.0,0.5,0.0);
-  /*glPointSize(3.0);
-    glBegin(GL_LINE_LOOP);
-    for (float angulo = 0.0; angulo<6.0; angulo+=0.0001){
-      glVertex2f(radio1*cos(angulo) + cxb,radio*sin(angulo) + cyb);
-        }
-    glEnd();*/
   glBegin(GL_LINE_LOOP);
     glVertex2f(0.0,0.0);
     glVertex2f(0.7,0.0);
@@ -144,12 +148,6 @@ void dibujarBonusVelocidad(float cxb, float cyb, float radio){ //
 void dibujarBonusTamBase(float cxb, float cyb, float radio){ // largo 0.8 en X, alto 0.2 en Y
   
   glColor3f(1.0,0.0,0.5);
-  /*glPointSize(3.0);
-    glBegin(GL_LINE_LOOP);
-    for (float angulo = 0.0; angulo<6.0; angulo+=0.0001){
-      glVertex2f(radio2*cos(angulo) + cxb,radio*sin(angulo) + cyb);
-        }
-    glEnd();*/
   glBegin(GL_LINE_LOOP);
     glVertex2f(0.0,-0.2);
     glVertex2f(0.0,-0.4);
@@ -185,17 +183,27 @@ void dibujarPlataforma() {
     glPopMatrix();
 }
 
-void dibujarPelota(float radio) {
+void dibujarPelota(float r) {
 
     glPushMatrix();
-        glTranslatef(0.0,-8.1,0.0); 
+        glTranslatef(0.0,-8.2,0.0); 
         glColor3f(1.0,1.0,1.0);
         glPointSize(3.0);
         glBegin(GL_LINE_LOOP);
             for (float angulo = 0.0; angulo<6.0; angulo+=0.0001){
-                glVertex2f(radio*cos(angulo) + pelota[0],radio*sin(angulo) + pelota[1]);
+                glVertex2f(r*cos(angulo) + pelota[0],r*sin(angulo) + pelota[1]);
             }
         glEnd();
+
+        //los angulos son una prueba, deberiamos hacer un rand()%45+45 para que sea mas dinamico
+        if(pelota[1]-r < 0) gameOver = true;        //el jugador pierde
+        else if(pelota[0]+r >= 8.9) anguloP += 90;  //choca con la pared derecha
+        else if(pelota[0]-r <= -8.9) anguloP -= 90; //choca con la pared izquierda
+        else if(pelota[1]+r >= 15){                 //pelota pega del techo
+            if(anguloP > 90) anguloP += 90; 
+            else anguloP -= 90;
+        }
+
     glPopMatrix();
 
 }
@@ -203,7 +211,6 @@ void dibujarPelota(float radio) {
 void dibujarMarcoVerde() {
     
     glPushMatrix();
-    
         glLineWidth(2.0);
         glColor3f(0.0,1.0,0.0);
         
@@ -245,21 +252,21 @@ void dibujarCirculo(float px, float py) {
     glEnd();
 }
 
-void dibujarExplosion(float cx, float cy,float posiciones[2][7]){
+void dibujarExplosion(float cx, float cy,float posiciones[7][2]){
 
     glPushMatrix();
         glTranslatef(cx+0.75,cy-0.25,0.0); 
 
         for (int i = 0; i < 7; i++){
-            dibujarCirculo(posiciones[0][i], posiciones[1][i]);
+            dibujarCirculo(posiciones[i][0], posiciones[i][1]);
             // se puede jugar con los valores para que el movimiento sea distinto
-            if (i == 3) posiciones[0][i] = -1;
-            else if (posiciones[0][i] >= 0) posiciones[0][i] += rand()%9 * 0.01;
-            else posiciones[0][i] -= rand()%3 * 0.1;
-            if (i == 6) posiciones[1][i] = 1.5;
-            else if (i == 0) posiciones[1][i] = rand()%2 * 0.01;
-            else if (posiciones[1][i] >= 0) posiciones[1][i] += rand()%9 * 0.01;
-            else posiciones[1][i] -= rand()%3 * 0.1;
+            if (i == 3) posiciones[i][0] = -1;
+            else if (posiciones[i][0] >= 0) posiciones[i][0] += rand()%9 * 0.01;
+            else posiciones[i][0] -= rand()%3 * 0.1;
+            if (i == 6) posiciones[i][1] = 1.5;
+            else if (i == 0) posiciones[i][1] = rand()%2 * 0.01;
+            else if (posiciones[i][1] >= 0) posiciones[i][1] += rand()%9 * 0.01;
+            else posiciones[i][1] -= rand()%3 * 0.1;
         }
 
         //glutTimerFunc(30,dibujarExplosion(cx, cy, posiciones, n++),-1);
@@ -305,32 +312,49 @@ void dibujarBloqueRoto(float cx, float cy){ //hay que revisarlo
 
 }
 
+bool hayChoque(float x, float y){
+    bool choca = false;
+    float px = pelota[0], py = pelota[1];
+
+    if((px-radioP == x+1.5 && y <= py && py <= y-0.5)
+      || (x == px+radioP && y <= py && py <= y-0.5) // choca del lado izq del bloque
+      || (x <= px && px <= x+1.5 && y == py-radioP) //  choca de la parte de arriba del bloque
+      || (x <= px && px <= x+1.5 &&  y-0.5 == py-radioP)){ // choca de la parte de abajo del bloque
+        choca = true;
+        anguloP += 90; //hay que cambiar este angulo
+    }
+
+    return choca;
+}
+
 void dibujarBloques() {
 
     glPushMatrix();
-    
+        
+        glTranslatef(0.0,-8.2,0.0); //comparte eje con la pelota para revisar las colisiones mas facil
         glLineWidth(2.0);
-
-        float cx = -8.2;
-        float cy = 6.0;
+        float cx = -8.2, cy = 15;
 
         for (int i = 0; i < 5; i++){
             for (int j = 0;j < 7;j++){
+
+                if(hayChoque(cx,cy)) bloques[i][j] +=1; //revisa si hay un choque
+
                 if (bloques[i][j] == 0 && buscar((i*7+j),especiales,5)) //dibuja especiales 
                     dibujarBloque(cx, cy, 1);
                 else if (bloques[i][j] == 1 && buscar(i*7+j,especiales,5)) //dibuja especiales golpeados una vez
                     dibujarBloqueRoto(cx, cy);
                 else if(bloques[i][j] == 0) //dibuja el resto de los bloques que no han sido golpeados
                     dibujarBloque(cx, cy, 0);
-                cx = cx+ 2.5;
+                cx += 2.5;
             }
             cx = -8.2;
-            cy = cy -1.25;
+            cy -= 1.25;
         }
 
     glPopMatrix();
-
 }
+
 
 //------- Sólo falta dibujo de impacto a bloque roto, para todos los demás ya está hecha la base.
 
@@ -340,38 +364,12 @@ void dibujarBloques() {
 
 void moverPelota(int h){
   if (h > 0){
-    glPushMatrix();
-
-      int anguloRotacion = 45;
-      // Rotación respecto al centro de la pelota
-      float x = pelota[0]-5,y = pelota[1]-2;
-      while (x < 20){
-        glTranslatef(x,y,0);
-        glRotatef(anguloRotacion,0.0,0.0,1);
-        glTranslatef(-pelota[0],-pelota[1],0);
-        dibujarPelota(0.3);
-        x += 1;
-        y += 1;
-      }
-      //anguloRotacion += 5;
+    pelota[0] = 0.1*cos(anguloP)+ pelota[0];
+    pelota[1] = 0.1*sin(anguloP)+ pelota[1];
       
-
-    glPopMatrix();
-
+    glutTimerFunc(10,moverPelota,1);
+    glutPostRedisplay();
   }
-  /* //--- Completar cuando funcione bien el lado derecho!
-  else if (h < 0){
-    glPushMatrix();
-
-      int anguloRotacion = -45;
-      glTranslatef(pelota[0],pelota[1]-2,0);
-      glRotatef(anguloRotacion,0.0,0.0,1);
-      glTranslatef(-pelota[0],-pelota[1],0);
-      dibujarPelota(0.3);
-      //anguloRotacion -= 5;
-    glPopMatrix();
-  }
-  */
 }
 
 void handleSpecialKeypress(int key, int x, int y) {
@@ -382,6 +380,7 @@ void handleSpecialKeypress(int key, int x, int y) {
                 if (plataforma > -6.6 && !baseLarga) plataforma -= 0.2;
                 else if (plataforma > -6.8 && !baseLarga) plataforma -= 0.1;
                 else if (plataforma > -6.4 && baseLarga) plataforma -= 0.2;
+                glutTimerFunc(10,moverPelota,1);
             }
         break;
         case GLUT_KEY_RIGHT:
@@ -390,11 +389,12 @@ void handleSpecialKeypress(int key, int x, int y) {
                 if (plataforma < 6.6 && !baseLarga) plataforma += 0.2;
                 else if (plataforma < 6.8 && !baseLarga) plataforma += 0.1;
                 else if (plataforma < 6.4 && baseLarga) plataforma += 0.2;
+                glutTimerFunc(10,moverPelota,1);
             }
         break;
     
     }
-  glutPostRedisplay(); // Esto debe ir, si no, no funciona 
+  glutPostRedisplay(); 
 }
 
 void handleSpecialKeyReleased(int key, int x, int y) {
@@ -452,22 +452,7 @@ void render(){
 
 //------------- Dibujamos PELOTA -------------
     dibujarPelota(0.3);
-    dibujarExplosion(2, 2,posInicial);
-    /*
-  if (!isLeftKeyPressed && !isRightKeyPressed) 
-
-  glPushMatrix();
-    glColor3f(1.0,0.0,1.0);
-    glTranslatef(0.0,-8.1,0.0); 
-    glPointSize(3.0);
-    glBegin(GL_POINTS);
-      glVertex2f(0.0+0.3,0.0);
-      glVertex2f(0.0-0.3,0.0);
-      glVertex2f(0.0,0.0+0.3);
-      glVertex2f(0.0,0.0-0.3);
-    glEnd();
-  glPopMatrix();
-*/  
+    //dibujarExplosion(2, 2,posInicial);
 
 //------------- Dibujamos MARCO -------------
     dibujarMarcoVerde();
