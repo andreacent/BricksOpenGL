@@ -11,7 +11,9 @@
 /*
 Agregue unas opciones si la pelota pega de las paredes dentro de dibujarPelota, 
 la pelota se mueve y reconoce las colisiones con las paredes y la plataforma
-los angulos debemos pensarlos mejor, no se ven naturales
+los angulos debemos pensarlos mejor, no se ven naturales. Debemos usar un poco de fisica
+pero para ir probando sirven
+bonus[6][3] nos va a servir para ir moviendo el bono cuando cae
 */
 
 bool inicial = true, //true para inicializar los bonus y espaciales una sola vez
@@ -37,8 +39,8 @@ float plataforma = 0.0,      //posicion de la plataforma
 int bloques[5][7] = {{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},
                        {0,0,0,0,0,0,0},{0,0,0,0,0,0,0}},
     especiales[5] = {}, //arreglo para los bloques especiales 
-    bonus[6][2]= {};    /*arreglo para los bloques bonus {i,j} i=bloque, 
-                        j=tipo de bono (0 tamaño de la plataforma, 1 velocidad de la pelota} */
+    bonus[6][3]= {};    /*{posicion x, posicion y, tipo de bono} 
+                          (0 tamaño de la plataforma, 1 velocidad de la pelota} */
 
 using namespace std;
 
@@ -121,12 +123,12 @@ void generarEspeciales(){
     }
 }
 
-int buscarBonus(int x){
+int buscarBonus(int x, int y){
   int i = 0;
   int esta = -1;
 
   while (i < 6){
-    if (x == bonus[i][0]) {
+    if (x == bonus[i][0] && y == bonus[i][1]) {
       esta = i;
       break;
     }
@@ -136,12 +138,17 @@ int buscarBonus(int x){
 }
 
 void generarBonus(){
-    int r,a;
-    for (int i = 0; i < 6; i++){
-        r = rand()%35;
-        while ( buscarBonus(r)) r = rand()%35;
-        bonus[i][0] = r; 
-        bonus[i][1] = rand()%2;
+    int i,j;
+    for (int k = 0; k < 6; k++){    
+        i = rand()%6;
+        j = rand()%6;
+        while ( buscarBonus(i,j) ){          
+          i = rand()%6;
+          j = rand()%6;
+        }
+        bonus[i][1] = i;
+        bonus[i][1] = j;
+        bonus[i][2] = rand()%2;
     }   
 }
 
@@ -378,14 +385,14 @@ void dibujarBloques() {
                   case 1:
                     if(buscarEspeciales(i*7+j)) dibujarBloqueRoto(cx, cy); //dibuja especiales golpeados una vez
                     else{
-                      esBonus = buscarBonus(i*7+j);
+                      esBonus = buscarBonus(i,j);
                       if (esBonus > -1) lanzarBonus(i,j,esBonus);
                       dibujarExplosion(2);
                       bloques[i][j] = -1;
                     }
                   break;
                   case 2:
-                    esBonus = buscarBonus(i*7+j);
+                    esBonus = buscarBonus(i,j);
                     if (esBonus > -1) lanzarBonus(i,j,esBonus);
                     dibujarExplosion(2);
                     bloques[i][j] = -1;
