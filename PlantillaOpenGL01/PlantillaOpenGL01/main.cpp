@@ -1,12 +1,12 @@
 #include <iostream>
-//#include <GL\glew.h>
-//#include <GL\freeglut.h>
+#include <GL\glew.h>
+#include <GL\freeglut.h>
 #include <math.h>
 #include <stdlib.h>
 #include <ctime>
 
-#include <GL/freeglut.h>
-#include <GL/gl.h>
+//#include <GL/freeglut.h>
+//#include <GL/gl.h>
 
 /*
 Agregue unas opciones si la pelota pega de las paredes dentro de dibujarPelota, 
