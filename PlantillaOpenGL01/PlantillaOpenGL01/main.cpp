@@ -32,8 +32,8 @@ float plataforma = 0.0,      //posicion de la plataforma
       explota[2],
       // variables relacionadas a la pelota
       pelota[2] = {0.0,0.0}, //posicion de la pelota
-      velocidadP = 0.08, //velocidad de la pelota
-      anguloP = 40.0,          //angulo con el que se mueve la pelota
+      velocidadP = 0.1, //velocidad de la pelota
+      anguloP,          //angulo con el que se mueve la pelota
       radioP = 0.3;     //radio de la pelota
 
 int bloques[5][7] = {{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},
@@ -219,6 +219,10 @@ void dibujarPlataforma() {
     glPopMatrix();
 }
 
+void calcularAngulo(float angulo = 0){
+  anguloP = 2 * (angulo - M_PI/2) - anguloP;
+}
+
 void dibujarPelota(float r) {
 
     glPushMatrix();
@@ -231,20 +235,25 @@ void dibujarPelota(float r) {
             }
         glEnd();
 
-        //los angulos son una prueba, deberiamos hacer un rand()%45+45 para que sea mas dinamico
+        //los angulos son una prueba
         if( pelota[1] < 0.0 && moviendose
                  && -tam+plataforma <= pelota[0]
                  && pelota[0] <= tam+plataforma){   // pega de la plataforma
-            if(anguloP > 180) anguloP -= 180; 
-            else anguloP += 180;
+            calcularAngulo(anguloP + 90);
         }
         else if(pelota[1]-r < 0) gameOver = true;        //el jugador pierde
-        else if(pelota[0]+r >= 8.9) anguloP += 90;  //choca con la pared derecha
-        else if(pelota[0]-r <= -8.9) anguloP -= 90; //choca con la pared izquierda
+        else if(pelota[0]+r >= 8.9) calcularAngulo();  //choca con la pared derecha
+        else if(pelota[0]-r <= -8.9) calcularAngulo(); //choca con la pared izquierda
         else if(pelota[1]+r >= 17.1){               //pelota pega del techo
-            if(anguloP > 90) anguloP += 90; 
-            else anguloP -= 90;
+            if(anguloP >= 90) calcularAngulo(anguloP - 90);
+            else calcularAngulo(anguloP + 90);
         }
+        else if((pow ((-tam+plataforma-pelota[0]),2) + pow(0,0) == pow (radioP,2))          //  choca con la esquina sup izq bloque
+                || (pow((tam+plataforma+1.5-pelota[0]),2) + pow (0,0)  == pow(radioP,2))){
+            if(anguloP >= 180) calcularAngulo(anguloP -180);
+            else calcularAngulo(anguloP + 180);
+        }
+
 
     glPopMatrix();
 
@@ -292,6 +301,8 @@ void dibujarCirculo(float px, float py) {
             glVertex2f(x,y);
         }
     glEnd();
+
+
 }
 
 void dibujarExplosion(int h){
@@ -343,22 +354,27 @@ void dibujarBloqueRoto(float cx, float cy){ //hay que revisarlo
 
 }
 
-// INCOMPLETA no funciona, hay que arreglarla
 bool hayChoque(float x, float y){
     bool choca = false;
     float px = pelota[0], py = pelota[1];
 
-    if((px-radioP == x+1.5 && y <= py && py <= y-0.5) // choca del lado der del bloque
-       || (x == px+radioP && y <= py && py <= y-0.5)){ // choca del lado izq del bloque
+    if(px-radioP <= x+1.5 && px-radioP > x && py <= y && py >= y-0.5){// choca del lado der del bloque
         choca = true;
-        if(anguloP > 90) anguloP -= 90; 
-        else anguloP += 90;
+        calcularAngulo(anguloP + 90);
     }
-    else if((x <= px && px <= x+1.5 && y == py-radioP)          //  choca de la parte de arriba del bloque
-            || (x <= px && px <= x+1.5 &&  y-0.5 == py-radioP)){// choca de la parte de abajo del bloque
+    else if(px+radioP >= x && px+radioP < x +1.5 && py <= y && py >= y-0.5){ // choca del lado izq del bloque
         choca = true;
-        if(anguloP > 180) anguloP -= 180; 
-        else anguloP += 180;
+        calcularAngulo(anguloP - 90);
+    }
+    else if((px >= x && px < x+1.5 && y >= py-radioP && py-radioP >= y-0.5) //  choca de la parte de arriba del bloque
+            || (x <= px && px <= x+1.5 &&  py+radioP <= y && y-0.5 <= py+radioP)// choca de la parte de abajo del bloque
+            || (pow ((x-px),2) + pow(y-0.5-py,2) == pow (radioP,2))          //  choca con la esquina inf izq bloque
+            || (pow((x+1.5-px),2) + pow (y-0.5-py,2) == pow(radioP,2))  // choca con la esquina inf der bloque
+            || (pow ((x-px),2) + pow(y-py,2) == pow (radioP,2))          //  choca con la esquina sup izq bloque
+            || (pow((x+1.5-px),2) + pow (y-py,2) == pow(radioP,2))){   // choca con la esquina sup der bloque
+        choca = true;
+        if(anguloP >= 180 ) calcularAngulo(anguloP - 180);
+        else calcularAngulo(anguloP + 180);
     }
     return choca;
 }
@@ -376,7 +392,8 @@ void dibujarBloques() {
         for (int i = 0; i < 5; i++){
             for (int j = 0;j < 7;j++){
 
-                if(hayChoque(cx,cy)) bloques[i][j] +=1; //revisa si hay un choque
+                if(bloques[i][j] > -1)   //revisa si hay un choque
+                  if(hayChoque(cx,cy)) bloques[i][j] +=1;
 
                 switch (bloques[i][j]) {
                   case 0:
@@ -389,14 +406,14 @@ void dibujarBloques() {
                       //esBonus = buscarBonus(i,j);
                       //if (esBonus > -1) lanzarBonus(i,j,esBonus);
                       //dibujarExplosion(2);
-                      //bloques[i][j] = -1;
+                      bloques[i][j] = -1;
                     }
                   break;
                   case 2:
                     //esBonus = buscarBonus(i,j);
                     //if (esBonus > -1) lanzarBonus(i,j,esBonus);
                     //dibujarExplosion(2);
-                    //bloques[i][j] = -1;
+                    bloques[i][j] = -1;
                   break;
                 }
 
@@ -414,9 +431,17 @@ void dibujarBloques() {
 
 /************************* MOVIMIENTO *************************/
 void moverPelota(int h){
+  float v;
   if (h > 0){
-    pelota[0] = velocidadP*cos(anguloP)+ pelota[0];
-    pelota[1] = velocidadP*sin(anguloP)+ pelota[1];
+    if(velocidad){
+      v = velocidadP + velocidadP * 0.4;
+      pelota[0] = v*cos(anguloP)+ pelota[0];
+      pelota[1] = v*sin(anguloP)+ pelota[1];
+    }else{      
+      pelota[0] = velocidadP*cos(anguloP)+ pelota[0];
+      pelota[1] = velocidadP*sin(anguloP)+ pelota[1];
+    }
+    
     lanzarBonus();
       
     glutTimerFunc(10,moverPelota,1);
@@ -433,6 +458,7 @@ void handleSpecialKeypress(int key, int x, int y) {
                 else if (plataforma > -6.8 && !baseLarga) plataforma -= 0.1;
                 else if (plataforma > -6.4 && baseLarga) plataforma -= 0.2;
                 if (!moviendose){
+                  anguloP = 95 + rand()% 25;
                   glutTimerFunc(10,moverPelota,1);
                   moviendose = true;
                 } 
@@ -445,6 +471,7 @@ void handleSpecialKeypress(int key, int x, int y) {
                 else if (plataforma < 6.8 && !baseLarga) plataforma += 0.1;
                 else if (plataforma < 6.4 && baseLarga) plataforma += 0.2;
                 if (!moviendose){
+                  anguloP = 40 + rand()% 39;
                   glutTimerFunc(10,moverPelota,1);
                   moviendose = true;
                 } 
