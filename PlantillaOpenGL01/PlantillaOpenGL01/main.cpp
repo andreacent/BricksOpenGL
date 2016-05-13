@@ -39,8 +39,9 @@ float plataforma = 0.0,      //posicion de la plataforma
 int bloques[5][7] = {{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},
                        {0,0,0,0,0,0,0},{0,0,0,0,0,0,0}},
     especiales[5] = {}, //arreglo para los bloques especiales 
-    bonus[6][3]= {};    /*{posicion x, posicion y, tipo de bono} 
+    bonus[6][3]= {},    /*{posicion x, posicion y, tipo de bono} 
                           (0 tamaño de la plataforma, 1 velocidad de la pelota} */
+    sumaGolpes=0;
 
 using namespace std;
 
@@ -241,17 +242,17 @@ void dibujarPelota(float r) {
                  && pelota[0] <= tam+plataforma){   // pega de la plataforma
             calcularAngulo(anguloP + 90);
         }
-        else if(pelota[1]-r < 0) gameOver = true;        //el jugador pierde
+        else if((pow ((-tam+plataforma-pelota[0]),2) + pow(0,0) == pow (radioP,2))          //  choca con la esquina sup izq bloque
+                || (pow((tam+plataforma+1.5-pelota[0]),2) + pow (0,0)  == pow(radioP,2))){
+            if(anguloP >= 180) calcularAngulo(anguloP -180);
+            else calcularAngulo(anguloP + 180);
+        }
+        else if(pelota[1] < 0) gameOver = true;        //el jugador pierde
         else if(pelota[0]+r >= 8.9) calcularAngulo();  //choca con la pared derecha
         else if(pelota[0]-r <= -8.9) calcularAngulo(); //choca con la pared izquierda
         else if(pelota[1]+r >= 17.1){               //pelota pega del techo
             if(anguloP >= 90) calcularAngulo(anguloP - 90);
             else calcularAngulo(anguloP + 90);
-        }
-        else if((pow ((-tam+plataforma-pelota[0]),2) + pow(0,0) == pow (radioP,2))          //  choca con la esquina sup izq bloque
-                || (pow((tam+plataforma+1.5-pelota[0]),2) + pow (0,0)  == pow(radioP,2))){
-            if(anguloP >= 180) calcularAngulo(anguloP -180);
-            else calcularAngulo(anguloP + 180);
         }
 
 
@@ -291,8 +292,8 @@ void dibujarMarcoVerde() {
 }
 
 // --------DIBUJO CUANDO EL BLOQUE SE ROMPE--------
-void dibujarCirculo(float px, float py) {
-    float x,y,radio = 0.14;
+void dibujarCirculo(float px, float py, float radio = 0.14) {
+    float x,y;
     glPointSize(2.0);
     glBegin(GL_POINTS);
         for(double i=0.0; i<10; i+=0.001){
@@ -379,6 +380,46 @@ bool hayChoque(float x, float y){
     return choca;
 }
 
+void dibujarCara(){
+    float x,y;
+    glColor3f(1,1,0);
+    dibujarCirculo(0.0, 0.0,6);
+
+    glPointSize(30.0);
+    glBegin(GL_POINTS);
+        glVertex2f(-2.3,2.3);
+        glVertex2f(2.3,2.3);
+    glEnd();
+
+    glPointSize(2.0);
+
+    glPushMatrix();
+    glScalef(0.8,0.8,0.8);
+
+    if(gameOver){
+        glTranslatef(0,-3.6,0);
+        glBegin(GL_POINTS);
+            for(double i=0.0; i<3; i+=0.001){
+                x=4*cos(i);
+                y=4*sin(i);
+                glVertex2f(x,y);
+            }
+        glEnd();
+    }
+    else{
+        glTranslatef(0,-0.5,0);
+        glRotatef(180,0,0,1);
+        glBegin(GL_POINTS);
+            for(double i=0.0; i<3; i+=0.001){
+                x=4*cos(i);
+                y=4*sin(i);
+                glVertex2f(x,y);
+            }
+        glEnd();
+    }
+    glPopMatrix();
+}
+
 void dibujarBloques() {
 
     int esBonus;
@@ -393,7 +434,10 @@ void dibujarBloques() {
             for (int j = 0;j < 7;j++){
 
                 if(bloques[i][j] > -1)   //revisa si hay un choque
-                  if(hayChoque(cx,cy)) bloques[i][j] +=1;
+                  if(hayChoque(cx,cy)){
+                    bloques[i][j] +=1;
+                    sumaGolpes+=1;
+                  }
 
                 switch (bloques[i][j]) {
                   case 0:
@@ -501,6 +545,11 @@ void render(){
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_LINE_SMOOTH);
+  glEnable(GL_POINT_SMOOTH); 
+  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 
   if(inicial) {
     srand(time(NULL)); //genera semilla basada en el reloj del sistema
@@ -509,27 +558,33 @@ void render(){
     inicial = false;
   }
 
-//------------- Dibujamos PLATAFORMA -------------          
-    dibujarPlataforma();
+  if(!gameOver || sumaGolpes >= 40){
+    //------------- Dibujamos PLATAFORMA -------------          
+        dibujarPlataforma();
 
-//------------- Dibujamos PELOTA -------------
-    dibujarPelota(0.3);
-    //explota[0] = 3;
-    //explota[1] = 1;
-    //dibujarExplosion(2);
+    //------------- Dibujamos PELOTA -------------
+        dibujarPelota(0.3);
+        //explota[0] = 3;
+        //explota[1] = 1;
+        //dibujarExplosion(2);
 
-//------------- Dibujamos MARCO -------------
-    dibujarMarcoVerde();
+    //------------- Dibujamos MARCO -------------
+        dibujarMarcoVerde();
 
-//------------- Dibujamos BLOQUES -------------
-    
-    dibujarBloques();
+    //------------- Dibujamos BLOQUES -------------
+        
+        dibujarBloques();
 
-//------------- Dibujo Bonus para probar -------------
+    //------------- Dibujo Bonus para probar -------------
 
-  //dibujarBonusTamBase(0.4,-0.3,0.5);
-  //dibujarBonusVelocidad(0.4,-0.3,0.5);
-  
+      //dibujarBonusTamBase(0.4,-0.3,0.5);
+      //dibujarBonusVelocidad(0.4,-0.3,0.5);
+
+  }else{
+    dibujarCara();
+
+  }
+
   glFlush();
   glutSwapBuffers();
 }
