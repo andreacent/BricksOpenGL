@@ -102,14 +102,12 @@ void changeViewport(int w, int h) {
 // Busca si un bloque es especial o es un bonus 
 bool buscarEspeciales(int x){
   bool esta = false;
-  int i = 0;
 
-  while (i < 5){
+  for (int i = 0; i < 5; i++){
     if (x == especiales[i]) {
       esta = true;
       break;
     }
-    i++;
   }
   return esta;
 }
@@ -123,50 +121,47 @@ void generarEspeciales(){
     }
 }
 
-int buscarBonus(int x, int y){
-  int i = 0;
-  int esta = -1;
+bool buscarBonus(int x, int y){
+  bool esta = false;
 
-  while (i < 6){
+  for (int i = 0; i < 6; i++){
     if (x == bonus[i][0] && y == bonus[i][1]) {
-      esta = i;
+      esta = true;
       break;
     }
-    i++;
   }
   return esta;
 }
 
 void generarBonus(){
     int i,j;
-    for (int k = 0; k < 6; k++){    
-        i = rand()%6;
-        j = rand()%6;
-        while ( buscarBonus(i,j) ){          
-          i = rand()%6;
-          j = rand()%6;
-        }
+
+    for (int k = 0; k < 6; k++){  
+      do{
+          i = rand()%5;
+          j = rand()%7;
+      }while ( buscarBonus(i,j) );
         bonus[k][0] = i;
         bonus[k][1] = j;
         bonus[k][2] = rand()%2;
-        bloques[i][j] =-1;
     }   
 }
+
 
 /*********************** FUNCIONES PARA DIBUJAR ***********************/
 // -------- DIBUJOS PARA LA FORMA DE LOS BONUS  --------
 
-void dibujarBonusVelocidad(float cxb, float cyb, float radio){ //
+void dibujarBonusVelocidad(float x, float y){ //
   glColor3f(1.0,0.5,0.0);
   glBegin(GL_LINE_LOOP);
-    glVertex2f(0.0,0.0);
-    glVertex2f(0.7,0.0);
-    glVertex2f(0.6,-0.5);
-    glVertex2f(0.8,-0.5);
-    glVertex2f(0.5,-1.0);
-    glVertex2f(0.6,-0.6);
-    glVertex2f(0.3,-0.6);
-    glVertex2f(0.5,-0.2);
+    glVertex2f(x,y);
+    glVertex2f(x+0.7,y);
+    glVertex2f(x+0.6,y-0.5);
+    glVertex2f(x+0.8,y-0.5);
+    glVertex2f(x+0.5,y-1.0);
+    glVertex2f(x+0.6,y-0.6);
+    glVertex2f(x+0.3,y-0.6);
+    glVertex2f(x+0.5,y-0.2);
   glEnd();
 }
 
@@ -183,18 +178,16 @@ void dibujarBonusTamBase(float x, float y){ // largo 0.8 en X, alto 0.2 en Y
 
 // INCOMPLETA
 void lanzarBonus(){
-    int b;
+    float x,y;
+
     for(int i; i<6; i++){
-      if(bloques[bonus[i][0]][bonus[i][1]] == -1 ){ // && bonus[i][1] >= -0.7 si el bloque se rompio
-        b = (int)bonus[i][2];      
-        switch (b) {
-          case 0:
-            dibujarBonusTamBase(bonus[i][0],bonus[i][1]);
-          break;
-          case 1:
-            dibujarBonusVelocidad(0.4,-0.3,0.5);
-          break;
-        }
+      if(bloques[bonus[i][0]][bonus[i][1]] == -1 ){ 
+        x = bonus[i][0];
+        y = bonus[i][1];
+
+        if ( bonus[i][2]==0 && bonus[i][1] >= -0.7) dibujarBonusTamBase(x,y);
+        else if( bonus[i][2]==1 && bonus[i][1] >= 0 ) dibujarBonusVelocidad(x,y);
+
         bonus[i][1] += -0.1;
       }
     }
