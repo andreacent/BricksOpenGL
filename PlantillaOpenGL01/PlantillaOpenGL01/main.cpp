@@ -18,7 +18,6 @@ bool isLeftKeyPressed = false, isRightKeyPressed = false,
      velocidad = false,     //bonus de velocidad activado o desactivado
      baseLarga = false,     //bonus de base activado o desactivado
      moviendose = false,    //true si la pelota comienza a moverse
-     moviendoBonus =false,  //true si los bonos comienzan a moverse
      gameOver = false;      
 
 float // variables para cuando el bloque se rompe
@@ -37,8 +36,7 @@ int bloques[5][7] = {{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},
                       i,j son los indices de la matriz bloques
                       tipo de bonus: 0 velocidad de la pelota, 
                                      1 tamano de la plataforma */
-    sumaGolpes=0,   
-    sumaBonus=0; 
+    sumaGolpes=0; 
 
 // PELOTA
 GLfloat radioP = 0.3f;            // Radio de la pelota.
@@ -217,7 +215,6 @@ void dibujarBonusVelocidad(float x, float y, int bono){ //
         velocidadP += velocidadP*0.4;
         printf("velocidad despues de colision: %d\n", velocidadP);
       }
-      sumaBonus -= 1;
       posBonus[bono][1] = -10;
     }
 
@@ -242,7 +239,6 @@ void dibujarBonusTamBase(float x, float y, int bono){ // largo 0.8 en X, alto 0.
         printf("tam base despues colision: %d\n", tam);
         baseLarga = true;
       }
-      sumaBonus -= 1;
       posBonus[bono][1] = -10;
     }
 }
@@ -460,21 +456,6 @@ bool hayChoque(float x, float y){
     return choca;
 }
 
-void movimientoBonus(int h){
-  if (h > 0){
-    if(sumaBonus > 0){
-      for(int i=0; i<6; i++){
-        if(bloques[bonus[i][0]][bonus[i][1]] == -1 && posBonus[i][1] > -5) {
-          posBonus[i][1] -= 0.03;  
-        }
-        else if(bloques[bonus[i][0]][bonus[i][1]] == -1 && posBonus[i][1] <=-5 ) sumaBonus -= 1;
-      }  
-    }    
-    glutTimerFunc(10,movimientoBonus,1);
-    glutPostRedisplay();
-  }
-}
-
 void dibujarBloques() {
     int esBonus;
     glPushMatrix();
@@ -492,10 +473,6 @@ void dibujarBloques() {
                 case -1: //bloque eliminado 
                   esBonus = buscarBonus(i,j);
                   if (esBonus > -1 && posBonus[esBonus][1] > 0){
-                    if(!moviendoBonus){
-                      moviendoBonus = true;
-                      glutTimerFunc(40,movimientoBonus,1);
-                    }
                     switch (bonus[esBonus][2]) {
                       case 0:
                         dibujarBonusVelocidad(posBonus[esBonus][0],posBonus[esBonus][1],esBonus);    
@@ -504,6 +481,7 @@ void dibujarBloques() {
                         dibujarBonusTamBase(posBonus[esBonus][0],posBonus[esBonus][1],esBonus);
                       break;
                     }
+                    if(posBonus[esBonus][1] > -5) posBonus[esBonus][1] -= 0.01; 
                   }
                 break;
                 case 0: //el bloque no hay sido golpeado
@@ -515,7 +493,6 @@ void dibujarBloques() {
                   else{
                     bloques[i][j] = -1;
                     sumaGolpes +=1;
-                    if (esBonus > -1) sumaBonus+=1; //incrementa para que se mueva el bonus
                   }
                 break;
                 case 2: //bloques golpeados dos veces
@@ -523,7 +500,6 @@ void dibujarBloques() {
                     dibujarExplosion(cx,cy);              
                     bloques[i][j] = -1;
                     sumaGolpes +=1; 
-                    if (esBonus > -1) sumaBonus+=1; //incrementa para que se mueva el bonus
                   }
                 break;
               }
