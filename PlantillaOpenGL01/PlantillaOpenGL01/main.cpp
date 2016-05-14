@@ -496,7 +496,7 @@ void dibujarBloques() {
                   dibujarBonusTamBase(posBonus[esBonus][0],posBonus[esBonus][1],esBonus);
                 break;
               }
-              if(posBonus[esBonus][1] > -5) posBonus[esBonus][1] -= vb; 
+              if(posBonus[esBonus][1] > -9) posBonus[esBonus][1] -= vb; 
             }
           break;
           case 0: //el bloque no hay sido golpeado
