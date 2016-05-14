@@ -38,7 +38,6 @@ float plataforma = 0.0,      //posicion de la plataforma
       posInicial[8][2] = {{1,0},{0,0},{0,1},{0,0},{1,0},{1,0},{1,0},{0,0}}, 
       anguloPedazos[8] = {-330,-280,-90,-180,220,-60,320,-100},
       explota[2],
-      bon[2] = {0.0,0.0}, // posicion del bonus
       tam = 2.0,
       // variables relacionadas a la pelota
       //pelota[2] = {0.0,0.0}, //posicion de la pelota
@@ -160,8 +159,8 @@ void generarBonus(){
         bonus[k][0] = i;
         bonus[k][1] = j;
         bonus[k][2] = rand()%2;
-        bonus[k][3] = 100;//j*2.5 - 8.4; //calcula posicion en x
-        bonus[k][4] = 100;//15 - i*1.25; // calcula posicion en y
+        bonus[k][3] = j*2.5 - 8.4; //calcula posicion en x
+        bonus[k][4] = 15 - i*1.25; // calcula posicion en y
     }   
 }
 
@@ -225,7 +224,6 @@ void dibujarBonusVelocidad(float x, float y, int bono){ //
       else velocidad = true;
       bonus[bono][4] = -10.0;
       sumaBonus -= 1;
-      dibujarCirculo(-2,4);
     }
 
 }
@@ -253,7 +251,6 @@ void dibujarBonusTamBase(float x, float y, int bono){ // largo 0.8 en X, alto 0.
       }
       bonus[bono][4] = -10.0;
       sumaBonus -= 1;
-      dibujarCirculo(-2,4);
     }
 
 }
@@ -488,7 +485,7 @@ void movimientoB(int h){
         }   
     }
 
-    glutTimerFunc(5,movimientoB,1);
+    glutTimerFunc(120,movimientoB,1);
     glutPostRedisplay();
   }
 }
@@ -505,15 +502,6 @@ void dibujarBloques() {
               if (bloques[i][j] > -1){
                 if(hayChoque(cx,cy)) bloques[i][j] +=1; //revisa si hay un choque
               }              
-
-              // asignamos las posiciones a los bloques bonus
-              esBonus = buscarBonus(i,j);
-              if (esBonus > -1 && bonus[esBonus][3] == 100) {
-                  bonus[esBonus][3] = cx;
-                  bonus[esBonus][4] = cy;
-                  //dibujarBonusTamBase(cx,cy);   
-                  //dibujarBonusTamBase( bonus[esBonus][3],bonus[esBonus][4]); // deberian ser lo mismo pero no
-                } 
 
               switch (bloques[i][j]) {
                 case 0:
@@ -537,6 +525,7 @@ void dibujarBloques() {
                   }
                 break;
                 case -1:
+                  esBonus = buscarBonus(i,j);
                   if (esBonus > -1 && bonus[esBonus][4] > 0){
                     movimientoB(1);
                     switch (bonus[esBonus][2]) {
