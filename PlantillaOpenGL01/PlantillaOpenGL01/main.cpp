@@ -8,10 +8,19 @@
 #include <GL/freeglut.h>
 #include <GL/gl.h>
 
+using namespace std;
+
+#define DEF_floorGridScale  1.0f
+#define DEF_floorGridXSteps 10.0f
+#define DEF_floorGridZSteps 10.0f
+
 #define PI 3.14159265358979f
-#define lb 1.9            // largo del bloque
-#define ab 0.5            // altura del bloque
-#define velPlataforma 0.2 // velocidad de la plataforma
+#define lb 1.9    // largo del bloque
+#define ab 0.5    // altura del bloque
+#define vp 0.2    // velocidad con la que se mueve la plataforma
+#define vb 0.01   // velocidad con la que caen los bonos
+#define cbe 5     // cantidad de bloques especiales
+#define cbb 6     // cantidad de bloques con bonus
 
 bool isLeftKeyPressed = false, isRightKeyPressed = false,
      inicial = true,        //true para inicializar los bonus y especiales una sola vez
@@ -23,7 +32,7 @@ bool isLeftKeyPressed = false, isRightKeyPressed = false,
 float // variables para cuando el bloque se rompe
       posInicial[8][2] = {{1,0},{0,0},{0,1},{0,0},{1,0},{1,0},{1,0},{0,0}}, 
       anguloPedazos[8] = {-330,-280,-90,-180,220,-60,320,-100},
-      posBonus[6][2],  //{posicion x, posicion y }
+      posBonus[6][2],  //posicion de los bonos
       explota[2],  
       // PLATAFORMA
       plataforma = 0.0, //posicion
@@ -36,7 +45,7 @@ int bloques[5][7] = {{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},
                       i,j son los indices de la matriz bloques
                       tipo de bonus: 0 velocidad de la pelota, 
                                      1 tamano de la plataforma */
-    sumaGolpes=0; 
+    destruidos=0;   //cantidad de bloques destruidos
 
 // PELOTA
 GLfloat radioP = 0.3f;            // Radio de la pelota.
@@ -45,12 +54,6 @@ GLfloat ySpeed = 0.05f;
 GLfloat anguloP = 40.0f;          // Angulo con el que se mueve la pelota;
 GLfloat velocidadP = 0.00001;     // Velocidad de la pelota
 GLfloat pelota[2] = {0.0f,0.0f};  // Centro de la pelota.
-
-using namespace std;
-
-#define DEF_floorGridScale  1.0f
-#define DEF_floorGridXSteps 10.0f
-#define DEF_floorGridZSteps 10.0f
 
 void ejesCoordenada(float w) {
   
@@ -85,7 +88,6 @@ void ejesCoordenada(float w) {
         }
       }
     }
-    
   glEnd();
   glLineWidth(1.0);
 }
@@ -107,7 +109,7 @@ void changeViewport(int w, int h) {
 bool buscarEspeciales(int x){
   bool esta = false;
 
-  for (int i = 0; i < 5; i++){
+  for (int i = 0; i < cbe; i++){
     if (x == especiales[i]) {
       esta = true;
       break;
@@ -118,18 +120,17 @@ bool buscarEspeciales(int x){
 
 void generarEspeciales(){
     int r;
-    for (int i = 0; i < 5; i++){
-        r = rand()%35;
-        while ( buscarEspeciales(r) ) r = rand()%35;
+    for (int i = 0; i < cbe; i++){
+        do r = rand()%35; while ( buscarEspeciales(r) ) ;
         especiales[i] = r;
     }
 }
 
-int buscarBonus(int x, int y){
+int buscarBonus(int x){
   int esta = -1;
 
-  for (int i = 0; i < 6; i++){
-    if (x == bonus[i][0] && y == bonus[i][1]) {
+  for (int i = 0; i < cbb; i++){
+    if (x == bonus[i][0]) {
       esta = i;
       break;
     }
@@ -138,19 +139,18 @@ int buscarBonus(int x, int y){
 }
 
 void generarBonus(){
-    int i,j;
-
-    for (int k = 0; k < 6; k++){  
-      do{
-          i = rand()%5;
-          j = rand()%7;
-      }while ( buscarBonus(i,j) >= 0 );
-        bonus[k][0] = i;
-        bonus[k][1] = j;
-        bonus[k][2] = rand()%2;
-        posBonus[k][0] = j*2.5 - 8.4; // calcula posicion en x
-        posBonus[k][1] = 15 - i*1.25; // calcula posicion en y
-    }   
+  int i,j,r;
+  for (int k = 0; k < cbb; k++){
+    do{
+        i = rand()%5;
+        j = rand()%7;
+        r = i*7+j;
+    }while ( buscarBonus(r) >= 0 );
+    bonus[k][0] = r;
+    bonus[k][1] = rand()%2;
+    posBonus[k][0] = j*2.5 - 8.4; // calcula posicion en x
+    posBonus[k][1] = 15 - i*1.25; // calcula posicion en y
+  }   
 }
 
 /*********************** FUNCIONES PARA DIBUJAR ***********************/
@@ -185,7 +185,6 @@ void dibujarExplosion(float x, float y){
 }
 
 // -------- DIBUJOS PARA LA FORMA DE LOS BONUS  --------
-
 void dibujarBonusVelocidad(float x, float y, int bono){ //
   GLfloat tp = tam+plataforma;
 
@@ -209,11 +208,10 @@ void dibujarBonusVelocidad(float x, float y, int bono){ //
                                             || (tp >= x+0.3 && -tp <= x+0.3) )) //vertice a la altura (y-0.6) dentro de la plataforma
       || (y-0.2 <= -0.3 && y-0.2 >= -0.6 && ( tp >= x+0.5 || -tp <= x+0.5 ))) //vertice a la altura (y-0.2) dentro de la plataforma
     {
+      printf("velocidad antes colision: %d\n", velocidadP);
       if(!velocidad){
         velocidad = true;
-        printf("velocidad antes colision: %d\n", velocidadP);
         velocidadP += velocidadP*0.4;
-        printf("velocidad despues de colision: %d\n", velocidadP);
       }
       posBonus[bono][1] = -10;
     }
@@ -233,10 +231,9 @@ void dibujarBonusTamBase(float x, float y, int bono){ // largo 0.8 en X, alto 0.
 
     // Colision con la plataforma
     if(-tp <= x+1.0 && tp >= x+0.2 && y-0.4 <= -0.3){
+      printf("tam base antes colision: %d\n", tam);
       if(!baseLarga){
-        printf("tam base antes colision: %d\n", tam);
         tam += tam*0.15;
-        printf("tam base despues colision: %d\n", tam);
         baseLarga = true;
       }
       posBonus[bono][1] = -10;
@@ -245,6 +242,10 @@ void dibujarBonusTamBase(float x, float y, int bono){ // largo 0.8 en X, alto 0.
 
 // -------------------- DIBUJOS BASE  ---------------------- 
 void dibujarPlataforma(){
+
+    if( -tam+plataforma < -8.9) plataforma -= -tam+plataforma + 8.9;
+    else if(tam+plataforma > 8.9) plataforma -= tam+plataforma - 8.9;
+
     glPushMatrix();
         glTranslatef(0.0,-8.2,0.0); 
         glColor3f(0.0,0.0,1.0);
@@ -256,7 +257,7 @@ void dibujarPlataforma(){
               glVertex2f(tam+plataforma-0.3, -0.3);
               glVertex2f(tam+plataforma-0.3, -0.8);
           glEnd();
-        } // base = 4 -> 15% = 0.6 -> base = 4.6
+        } 
 
         glBegin(GL_LINE_LOOP);
             glVertex2f(-tam+plataforma,-0.3);
@@ -471,9 +472,9 @@ void dibujarBloques() {
 
               switch (bloques[i][j]) {
                 case -1: //bloque eliminado 
-                  esBonus = buscarBonus(i,j);
+                  esBonus = buscarBonus(i*7+j);
                   if (esBonus > -1 && posBonus[esBonus][1] > 0){
-                    switch (bonus[esBonus][2]) {
+                    switch (bonus[esBonus][1]) {
                       case 0:
                         dibujarBonusVelocidad(posBonus[esBonus][0],posBonus[esBonus][1],esBonus);    
                       break;
@@ -481,7 +482,7 @@ void dibujarBloques() {
                         dibujarBonusTamBase(posBonus[esBonus][0],posBonus[esBonus][1],esBonus);
                       break;
                     }
-                    if(posBonus[esBonus][1] > -5) posBonus[esBonus][1] -= 0.01; 
+                    if(posBonus[esBonus][1] > -5) posBonus[esBonus][1] -= vb; 
                   }
                 break;
                 case 0: //el bloque no hay sido golpeado
@@ -492,14 +493,14 @@ void dibujarBloques() {
                   if(buscarEspeciales(i*7+j)) dibujarBloqueRoto(cx, cy);
                   else{
                     bloques[i][j] = -1;
-                    sumaGolpes +=1;
+                    destruidos +=1;
                   }
                 break;
                 case 2: //bloques golpeados dos veces
                   if(buscarEspeciales(i*7+j)){ 
                     dibujarExplosion(cx,cy);              
                     bloques[i][j] = -1;
-                    sumaGolpes +=1; 
+                    destruidos +=1; 
                   }
                 break;
               }
@@ -509,17 +510,6 @@ void dibujarBloques() {
             cy -= 1.25;
         }
     glPopMatrix();
-}
-
-/***************** FIN FUNCIONES PARA DIBUJAR *****************/
-/************************* MOVIMIENTO *************************/
-void movimientoPelota(int h){
-  if (h > 0){
-    pelota[0] = velocidadP*cos(anguloP)+ pelota[0];
-    pelota[1] = velocidadP*sin(anguloP)+ pelota[1];
-    glutTimerFunc(10,movimientoPelota,1);
-    glutPostRedisplay();
-  }
 }
 
 /************DIBUJA UNA CARA SI PIERDE O GANA************/
@@ -563,13 +553,23 @@ void dibujarCara(){
     glPopMatrix();
 }
 
+/***************** FIN FUNCIONES PARA DIBUJAR *****************/
+/************************* MOVIMIENTO *************************/
+void movimientoPelota(int h){
+  if (h > 0){
+    pelota[0] = velocidadP*cos(anguloP)+ pelota[0];
+    pelota[1] = velocidadP*sin(anguloP)+ pelota[1];
+    glutTimerFunc(10,movimientoPelota,1);
+    glutPostRedisplay();
+  }
+}
+
 void handleSpecialKeypress(int key, int x, int y) {
     switch (key) {
         case GLUT_KEY_LEFT:
             isLeftKeyPressed = true;
             if (!isRightKeyPressed) {
-                plataforma -= velPlataforma;
-                if( -tam+plataforma < -8.9) plataforma -= -tam+plataforma + 8.9;
+                plataforma -= vp;
                 if (!moviendose){
                   anguloP = 95 + rand()% 25;
                   glutTimerFunc(10,movimientoPelota,1);
@@ -580,8 +580,7 @@ void handleSpecialKeypress(int key, int x, int y) {
         case GLUT_KEY_RIGHT:
             isRightKeyPressed = true;
             if (!isLeftKeyPressed) {
-                plataforma += velPlataforma;
-                if(tam+plataforma > 8.9) plataforma -= tam+plataforma - 8.9;
+                plataforma += vp;
                 if (!moviendose){
                   anguloP = 40 + rand()% 39;
                   glutTimerFunc(10,movimientoPelota,1);
@@ -590,7 +589,6 @@ void handleSpecialKeypress(int key, int x, int y) {
             }
         break;
     }
-
     glutPostRedisplay();
 }
 
@@ -602,9 +600,7 @@ void handleSpecialKeyReleased(int key, int x, int y) {
         case GLUT_KEY_RIGHT:
             isRightKeyPressed = false;
         break;
-    
     }
-  // glutPostRedisplay(); Creo que en este caso no es necesario
 }
 
 void render(){
@@ -628,7 +624,7 @@ void render(){
     inicial = false;
   }
 
-  if(sumaGolpes < 40 && !gameOver){
+  if(destruidos < 35 && !gameOver){
     //------------- Dibujamos PLATAFORMA -------------          
         dibujarPlataforma();
     //------------- Dibujamos PELOTA -------------
@@ -640,11 +636,7 @@ void render(){
   }
   else{
     dibujarCara();
-    printf("Puntos: %d\n", sumaGolpes);
-    if(velocidad) printf("bonus velocidad activado\n");
-    else printf("bonus velocidad desactivado\n");
-    if(baseLarga) printf("bonus base activado\n");
-    else printf("bonus base desactivado\n");
+    //printf("Puntos: %d\n", destruidos);
     //glutLeaveMainLoop();
   }
 
