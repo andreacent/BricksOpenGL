@@ -258,6 +258,8 @@ void calcularAngulo(float angulo = 0){
 
 void dibujarPelota(float r) {
 
+    glLineWidth(1.0);
+
     glPushMatrix();
         glTranslatef(0.0,-8.2,0.0); 
         glColor3f(1.0,1.0,1.0);
@@ -283,17 +285,16 @@ void dibujarPelota(float r) {
             if(anguloP > 90) anguloP+= PI/2; 
             else anguloP-= PI/2;
         }
-        else if(pelota[1] < 0) gameOver = true;        //el jugador pierde
+        else if(pelota[1] < -0.1) gameOver = true;        //el jugador pierde
     //printf("el angulo actual es: %f \n", anguloP);
 
     glPopMatrix();
-
+    glLineWidth(2.0);
 }
 
 void dibujarMarcoVerde() {
     
     glPushMatrix();
-        glLineWidth(2.0);
         glColor3f(0.0,1.0,0.0);
         
         glBegin(GL_LINE_LOOP);
@@ -419,7 +420,6 @@ void dibujarBloques() {
     glPushMatrix();
         
         glTranslatef(0.0,-8.2,0.0); //comparte eje con la pelota para revisar las colisiones mas facil
-        glLineWidth(2.0);
         float cx = -8.4, cy = 15;
 
         for (int i = 0; i < 5; i++){
@@ -593,6 +593,8 @@ void render(){
   glEnable(GL_LINE_SMOOTH);
   glEnable(GL_POINT_SMOOTH); 
   glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+
+  glLineWidth(2.0);
 
   if(inicial) {
     srand(time(NULL)); //genera semilla basada en el reloj del sistema
