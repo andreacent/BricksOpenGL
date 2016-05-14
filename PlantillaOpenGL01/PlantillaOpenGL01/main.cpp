@@ -49,7 +49,7 @@ int bloques[5][7] = {{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},
     especiales[5] = {}, //arreglo para los bloques especiales 
     bonus[6][5]= {},    /*{posicion x, posicion y, tipo de bono} 
                           (0 tamaño de la plataforma, 1 velocidad de la pelota} */
-    sumaGolpes=0,
+    sumaGolpes,
     sumaBonus=0;
 
 // Cosas de la pelota
@@ -166,37 +166,100 @@ void generarBonus(){
 }
 
 /*********************** FUNCIONES PARA DIBUJAR ***********************/
+// --------DIBUJO CUANDO EL BLOQUE ESPECIAL SE ROMPE--------
+void dibujarCirculo(float px, float py, float radio = 0.14, float col = 1) {
+    float x,y;
+    glPointSize(2.0);
+    glColor3f(1.0,1.0,col);
+    glBegin(GL_POINTS);
+        for(double i=0.0; i<10; i+=0.001){
+            x=radio*cos(i)+px;
+            y=radio*sin(i)+py;
+            glVertex2f(x,y);
+        }
+    glEnd();
+}
+
+void dibujarExplosion(float x, float y){
+
+    explota[0] = x;
+    explota[1] = y;
+
+    glPushMatrix();
+      glTranslatef(explota[0]+0.75,explota[1]-0.25,0.0); 
+      for (int i = 0; i < 8; i++){
+        dibujarCirculo(posInicial[i][0], posInicial[i][1]);
+        posInicial[i][0] = 0.1*cos(anguloPedazos[i])+ posInicial[i][0];
+        posInicial[i][1] = 0.1*sin(anguloPedazos[i])+ posInicial[i][1];      
+      }
+      glutPostRedisplay();
+    glPopMatrix();  
+}
+
 // -------- DIBUJOS PARA LA FORMA DE LOS BONUS  --------
 
-void dibujarBonusVelocidad(float x, float y){ //
-  
+void dibujarBonusVelocidad(float x, float y, int bono){ //
+  GLfloat tp = tam+plataforma;
+
   glColor3f(1.0,0.5,0.0);
   glBegin(GL_LINE_LOOP);
     glVertex2f(x,y);
     glVertex2f(x+0.7,y);
-  glVertex2f(x+0.6,y-0.5);
+    glVertex2f(x+0.6,y-0.5);
     glVertex2f(x+0.8,y-0.5);
     glVertex2f(x+0.5,y-1.0);
     glVertex2f(x+0.6,y-0.6);
     glVertex2f(x+0.3,y-0.6);
-  glVertex2f(x+0.5,y-0.2);
+    glVertex2f(x+0.5,y-0.2);
   glEnd();
 
+    // Colision con la plataforma
+    if(  (y-1 <= -0.3 && tp >= x+0.5 && -tp <= x+0.5) // la punta choca con la plataforma
+      || (y-0.5 <= -0.3 && y-0.5 >= -0.6 && (  (tp >= x+0.8 && -tp <= x+0.8) 
+                                            || (tp >= x+0.6 && -tp <= x+0.6) )) //vertice a la altura (y-0.5) dentro de la plataforma
+      || (y-0.6 <= -0.3 && y-0.6 >= -0.6 && (  (tp >= x+0.6 && -tp <= x+0.6) 
+                                            || (tp >= x+0.3 && -tp <= x+0.3) )) //vertice a la altura (y-0.6) dentro de la plataforma
+      || (y-0.2 <= -0.3 && y-0.2 >= -0.6 && ( tp >= x+0.5 || -tp <= x+0.5 ))) //vertice a la altura (y-0.2) dentro de la plataforma
+    {
+      if(velocidad) velocidad = false;
+      else velocidad = true;
+      bonus[bono][4] = -10.0;
+      sumaBonus -= 1;
+      dibujarCirculo(-2,4);
+    }
 
 }
 
-void dibujarBonusTamBase(float x, float y){ // largo 0.8 en X, alto 0.2 en Y
-  
-  glColor3f(1.0,0.0,0.5);
+void dibujarBonusTamBase(float x, float y, int bono){ // largo 0.8 en X, alto 0.2 en Y
+    GLfloat tp = tam+plataforma;
+
+    glColor3f(1.0,0.0,0.5);
     glBegin(GL_LINE_LOOP);
-      glVertex2f(x,y-0.2);
-      glVertex2f(x,y-0.4);
-      glVertex2f(x+0.8,y-0.4);
-      glVertex2f(x+0.8,y-0.2);
+      glVertex2f(x+2,y-0.2);
+      glVertex2f(x+2,y-0.4);
+      glVertex2f(x+1,y-0.4);
+      glVertex2f(x+1,y-0.2);
     glEnd();
+
+    // Colision con la plataforma
+    if(-tp <= x+1.0 && tp >= x+0.2 && y-0.4 <= -0.3){
+      if(baseLarga) {
+        baseLarga = false;
+        tam -= 0.3;
+      }
+      else{
+        tam += 0.3;
+        baseLarga = true;
+      }
+      bonus[bono][4] = -10.0;
+      sumaBonus -= 1;
+      dibujarCirculo(-2,4);
+    }
+
 }
 
 // -------------------- DIBUJOS BASE  ---------------------- 
+
 void dibujarPlataforma() {
 
     glPushMatrix();
@@ -205,12 +268,11 @@ void dibujarPlataforma() {
 
         if(baseLarga){
           glBegin(GL_LINES);
-              glVertex2f(-tam+plataforma, -0.3);
-              glVertex2f(-tam+plataforma, -0.8);
-              glVertex2f(tam+plataforma, -0.3);
-              glVertex2f(tam+plataforma, -0.8);
+              glVertex2f(-tam+plataforma+0.3, -0.3);
+              glVertex2f(-tam+plataforma+0.3, -0.8);
+              glVertex2f(tam+plataforma-0.3, -0.3);
+              glVertex2f(tam+plataforma-0.3, -0.8);
           glEnd();
-          tam += 0.3;
         } // base = 4 -> 15% = 0.6 -> base = 4.6
 
         glBegin(GL_LINE_LOOP);
@@ -223,7 +285,7 @@ void dibujarPlataforma() {
 }
 
 void dibujarPelota(float r) {
-
+    glLineWidth(1.0);
     glPushMatrix();
     if (velocidadP > 0.0){
       pelota[0] = pelota[0] + xSpeed*velocidadP*cos(anguloP);
@@ -294,12 +356,14 @@ void dibujarPelota(float r) {
         pelota[0] += radioP;
     }
     // El jugador pierde
-    else if(pelota[1] < -0.1) gameOver = true;        
+    else if(pelota[1] < -0.6) gameOver = true;        
 
     pelota[0] = pelota[0] + xSpeed*velocidadP*cos(anguloP);
     pelota[1] = pelota[1] + ySpeed*velocidadP*sin(anguloP);
 
     glPopMatrix();
+
+    glLineWidth(2.0);
 }
 
 
@@ -330,36 +394,6 @@ void dibujarMarcoVerde() {
         glEnd();
 
     glPopMatrix();
-}
-
-// --------DIBUJO CUANDO EL BLOQUE ESPECIAL SE ROMPE--------
-void dibujarCirculo(float px, float py, float radio = 0.14, float col = 1) {
-    float x,y;
-    glPointSize(2.0);
-    glColor3f(1.0,1.0,col);
-    glBegin(GL_POINTS);
-        for(double i=0.0; i<10; i+=0.001){
-            x=radio*cos(i)+px;
-            y=radio*sin(i)+py;
-            glVertex2f(x,y);
-        }
-    glEnd();
-}
-
-void dibujarExplosion(float x, float y){
-
-    explota[0] = x;
-    explota[1] = y;
-
-    glPushMatrix();
-      glTranslatef(explota[0]+0.75,explota[1]-0.25,0.0); 
-      for (int i = 0; i < 8; i++){
-        dibujarCirculo(posInicial[i][0], posInicial[i][1]);
-        posInicial[i][0] = 0.1*cos(anguloPedazos[i])+ posInicial[i][0];
-        posInicial[i][1] = 0.1*sin(anguloPedazos[i])+ posInicial[i][1];      
-      }
-      glutPostRedisplay();
-    glPopMatrix();  
 }
 
 // --------FIN DIBUJO CUANDO EL BLOQUE SE ROMPE--------
@@ -440,6 +474,25 @@ bool hayChoque(float x, float y){
     return choca;
 }
 
+void movimientoB(int h){
+  if (h > 0){
+    //bonus
+    if(sumaBonus > 0){
+        for(int i=0; i<6; i++){
+          if(bloques[bonus[i][0]][bonus[i][1]] == -1 && bonus[i][4] >= 0){ 
+            bonus[i][4] -= 0.0000001;  
+          }
+          else if(bonus[i][4] < 0){
+            sumaBonus -= 1;
+          }
+        }   
+    }
+
+    glutTimerFunc(5,movimientoB,1);
+    glutPostRedisplay();
+  }
+}
+
 void dibujarBloques() {
     int esBonus;
     glPushMatrix();
@@ -485,12 +538,13 @@ void dibujarBloques() {
                 break;
                 case -1:
                   if (esBonus > -1 && bonus[esBonus][4] > 0){
+                    movimientoB(1);
                     switch (bonus[esBonus][2]) {
                       case 0:
-                        dibujarBonusVelocidad(bonus[esBonus][3],bonus[esBonus][4]);    
+                        dibujarBonusVelocidad(bonus[esBonus][3],bonus[esBonus][4],esBonus);    
                       break;
                       case 1:
-                        dibujarBonusTamBase( bonus[esBonus][3],bonus[esBonus][4]);
+                        dibujarBonusTamBase( bonus[esBonus][3],bonus[esBonus][4],esBonus);
                       break;
                     }
                   }
@@ -512,7 +566,7 @@ void movimiento(int h){
   if (h > 0){
     //pelota
     if(velocidad){
-      v = velocidadP + velocidadP * 0.4;
+      v += velocidadP * 0.4;
       pelota[0] = v*cos(anguloP)+ pelota[0];
       pelota[1] = v*sin(anguloP)+ pelota[1];
     }else{      
@@ -520,22 +574,23 @@ void movimiento(int h){
       pelota[1] = velocidadP*sin(anguloP)+ pelota[1];
     }
 
-    //bonus
+/*
     if(sumaBonus > 0){
         for(int i=0; i<6; i++){
           if(bloques[bonus[i][0]][bonus[i][1]] == -1 && bonus[i][4] >= 0){ 
-            bonus[i][4] -= 0.000001 ;  
+            bonus[i][4] -= 0.0000001;  
           }
           else if(bonus[i][4] < 0){
             sumaBonus -= 1;
           }
         }   
     }
-    
+    */
     glutTimerFunc(10,movimiento,1);
     glutPostRedisplay();
   }
 }
+
 
 /************DIBUJA UNA CARA SI PIERDE O GANA************/
 void dibujarCara(){
@@ -646,7 +701,7 @@ void render(){
     inicial = false;
   }
 
-  if(!gameOver || sumaGolpes >= 40){
+  if(sumaGolpes < 40 && !gameOver){
     //------------- Dibujamos PLATAFORMA -------------          
         dibujarPlataforma();
     //------------- Dibujamos PELOTA -------------
@@ -656,8 +711,8 @@ void render(){
     //------------- Dibujamos BLOQUES -------------
         dibujarBloques();
 
-
   }
+
   else dibujarCara();
 
   glFlush();
