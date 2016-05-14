@@ -11,7 +11,6 @@
 #define PI 3.14159265358979f
 #define lb 1.9        // largo del bloque
 #define ab 0.5        // altura del bloque
-#define velocidadP 0.00001 //velocidad de la pelota
 
 bool inicial = true, //true para inicializar los bonus y especiales una sola vez
      isLeftKeyPressed = false, isRightKeyPressed = false,
@@ -41,7 +40,8 @@ GLfloat radioP = 0.3f;  // Radio de la pelota.
 GLfloat pelota[2] = {0.0f,0.0f};      // Centro de la pelota.
 GLfloat xSpeed = 0.08f;    // Velocidad en X y Direccion en Y.
 GLfloat ySpeed = 0.05f;
-GLfloat anguloP = 40.0f; //angulo con el que se mueve la pelota
+GLfloat anguloP = 40.0f; //angulo con el que se mueve la pelota;
+GLfloat velocidadP = 0.00001; //velocidad de la pelota
 
 using namespace std;
 
@@ -206,7 +206,10 @@ void dibujarBonusVelocidad(float x, float y, int bono){ //
                                             || (tp >= x+0.3 && -tp <= x+0.3) )) //vertice a la altura (y-0.6) dentro de la plataforma
       || (y-0.2 <= -0.3 && y-0.2 >= -0.6 && ( tp >= x+0.5 || -tp <= x+0.5 ))) //vertice a la altura (y-0.2) dentro de la plataforma
     {
-      if(!velocidad) velocidad = true;
+      if(!velocidad){
+        velocidad = true;
+        velocidadP += velocidadP*0.4;
+      }
       bonus[bono][4] = -10.0;
       sumaBonus -= 1;
     }
@@ -227,7 +230,7 @@ void dibujarBonusTamBase(float x, float y, int bono){ // largo 0.8 en X, alto 0.
     // Colision con la plataforma
     if(-tp <= x+1.0 && tp >= x+0.2 && y-0.4 <= -0.3){
       if(!baseLarga){
-        tam += 0.3;
+        tam += tam*0.15;
         baseLarga = true;
       }
       bonus[bono][4] = -10.0;
@@ -236,8 +239,7 @@ void dibujarBonusTamBase(float x, float y, int bono){ // largo 0.8 en X, alto 0.
 }
 
 // -------------------- DIBUJOS BASE  ---------------------- 
-void dibujarPlataforma() {
-
+void dibujarPlataforma(){
     glPushMatrix();
         glTranslatef(0.0,-8.2,0.0); 
         glColor3f(0.0,0.0,1.0);
@@ -341,7 +343,6 @@ void dibujarPelota(float r) {
 
     glLineWidth(2.0);
 }
-
 
 void dibujarMarcoVerde() {    
     glPushMatrix();
@@ -529,14 +530,8 @@ void movimientoPelota(int h){
   float v;
   if (h > 0){
     //pelota
-    if(velocidad){
-      v += velocidadP * 0.4;
-      pelota[0] = v*cos(anguloP)+ pelota[0];
-      pelota[1] = v*sin(anguloP)+ pelota[1];
-    }else{      
-      pelota[0] = velocidadP*cos(anguloP)+ pelota[0];
-      pelota[1] = velocidadP*sin(anguloP)+ pelota[1];
-    }
+    pelota[0] = velocidadP*cos(anguloP)+ pelota[0];
+    pelota[1] = velocidadP*sin(anguloP)+ pelota[1];
     glutTimerFunc(10,movimientoPelota,1);
     glutPostRedisplay();
   }
@@ -596,9 +591,8 @@ void handleSpecialKeypress(int key, int x, int y) {
         case GLUT_KEY_LEFT:
             isLeftKeyPressed = true;
             if (!isRightKeyPressed) {
-                if (plataforma > -6.6 && !baseLarga) plataforma -= 0.2;
-                else if (plataforma > -6.8 && !baseLarga) plataforma -= 0.1;
-                else if (plataforma > -6.4 && baseLarga) plataforma -= 0.2;
+                plataforma -= 0.2;
+                if( -tam+plataforma < -8.9) plataforma -= -tam+plataforma + 8.9;
                 if (!moviendose){
                   anguloP = 95 + rand()% 25;
                   glutTimerFunc(10,movimientoPelota,1);
@@ -609,9 +603,8 @@ void handleSpecialKeypress(int key, int x, int y) {
         case GLUT_KEY_RIGHT:
             isRightKeyPressed = true;
             if (!isLeftKeyPressed) {
-                if (plataforma < 6.6 && !baseLarga) plataforma += 0.2;
-                else if (plataforma < 6.8 && !baseLarga) plataforma += 0.1;
-                else if (plataforma < 6.4 && baseLarga) plataforma += 0.2;
+                plataforma += 0.2;
+                if(tam+plataforma > 8.9) plataforma -= tam+plataforma - 8.9;
                 if (!moviendose){
                   anguloP = 40 + rand()% 39;
                   glutTimerFunc(10,movimientoPelota,1);
