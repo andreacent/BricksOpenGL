@@ -614,20 +614,12 @@ void render(){
         dibujarPelota(0.3);
     //------------- Dibujamos MARCO -------------
         dibujarMarcoVerde();
-
     //------------- Dibujamos BLOQUES -------------
-        
         dibujarBloques();
 
-    //------------- Dibujo Bonus para probar -------------
-
-      //dibujarBonusTamBase(0.4,-0.3);
-     // dibujarBonusVelocidad(0.4,-0.3);
-
-  }else{
-    dibujarCara();
 
   }
+  else dibujarCara();
 
   glFlush();
   glutSwapBuffers();
