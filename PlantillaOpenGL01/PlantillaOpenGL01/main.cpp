@@ -188,46 +188,52 @@ void dibujarExplosion(float x, float y){
 void dibujarBonusVelocidad(float x, float y, int bono){ //
   GLfloat tp = tam+plataforma;
 
-  glColor3f(1.0,0.5,0.0);
-  glBegin(GL_LINE_LOOP);
-    glVertex2f(x,y);
-    glVertex2f(x+0.7,y);
-    glVertex2f(x+0.6,y-0.5);
-    glVertex2f(x+0.8,y-0.5);
-    glVertex2f(x+0.5,y-1.0);
-    glVertex2f(x+0.6,y-0.6);
-    glVertex2f(x+0.3,y-0.6);
-    glVertex2f(x+0.5,y-0.2);
-  glEnd();
+  glPushMatrix();
+    glTranslatef(x,y,0.0);
+    glColor3f(1.0,0.5,0.0);
+    glBegin(GL_LINE_LOOP);
+      glVertex2f(0,0);
+      glVertex2f(0.7,0);
+      glVertex2f(0.6,-0.5);
+      glVertex2f(0.8,-0.5);
+      glVertex2f(0.5,-1.0);
+      glVertex2f(0.6,-0.6);
+      glVertex2f(0.3,-0.6);
+      glVertex2f(0.5,-0.2);
+    glEnd();
+  glPopMatrix();
 
-    // Colision con la plataforma
-    if(  (y-1 <= -0.3 && tp >= x+0.5 && -tp <= x+0.5) // la punta choca con la plataforma
-      || (y-0.5 <= -0.3 && y-0.5 >= -0.6 && (  (tp >= x+0.8 && -tp <= x+0.8) 
-                                            || (tp >= x+0.6 && -tp <= x+0.6) )) //vertice a la altura (y-0.5) dentro de la plataforma
-      || (y-0.6 <= -0.3 && y-0.6 >= -0.6 && (  (tp >= x+0.6 && -tp <= x+0.6) 
-                                            || (tp >= x+0.3 && -tp <= x+0.3) )) //vertice a la altura (y-0.6) dentro de la plataforma
-      || (y-0.2 <= -0.3 && y-0.2 >= -0.6 && ( tp >= x+0.5 || -tp <= x+0.5 ))) //vertice a la altura (y-0.2) dentro de la plataforma
-    {
-      printf("velocidad antes colision: %d\n", velocidadP);
-      if(!velocidad){
-        velocidad = true;
-        velocidadP += velocidadP*0.4; // aumenta velocidad 40%
-      }
-      posBonus[bono][1] = -10;
+  // Colision con la plataforma
+  if(  (y-1 <= -0.3 && tp >= x+0.5 && -tp <= x+0.5) // la punta choca con la plataforma
+    || (y-0.5 <= -0.3 && y-0.5 >= -0.6 && (  (tp >= x+0.8 && -tp <= x+0.8) 
+                                          || (tp >= x+0.6 && -tp <= x+0.6) )) //vertice a la altura (y-0.5) dentro de la plataforma
+    || (y-0.6 <= -0.3 && y-0.6 >= -0.6 && (  (tp >= x+0.6 && -tp <= x+0.6) 
+                                          || (tp >= x+0.3 && -tp <= x+0.3) )) //vertice a la altura (y-0.6) dentro de la plataforma
+    || (y-0.2 <= -0.3 && y-0.2 >= -0.6 && ( tp >= x+0.5 || -tp <= x+0.5 ))) //vertice a la altura (y-0.2) dentro de la plataforma
+  {
+    printf("velocidad antes colision: %d\n", velocidadP);
+    if(!velocidad){
+      velocidad = true;
+      velocidadP += velocidadP*0.4; // aumenta velocidad 40%
     }
+    posBonus[bono][1] = -10;
+  }
 
 }
 
 void dibujarBonusTamBase(float x, float y, int bono){ // largo 0.8 en X, alto 0.2 en Y
     GLfloat tp = tam+plataforma;
 
-    glColor3f(1.0,0.0,0.5);
-    glBegin(GL_LINE_LOOP);
-      glVertex2f(x+2,y-0.2);
-      glVertex2f(x+2,y-0.4);
-      glVertex2f(x+1,y-0.4);
-      glVertex2f(x+1,y-0.2);
-    glEnd();
+    glPushMatrix();
+      glTranslatef(x,y,0.0);
+      glColor3f(1.0,0.0,0.5);
+      glBegin(GL_LINE_LOOP);
+        glVertex2f(2,-0.2);
+        glVertex2f(2,-0.4);
+        glVertex2f(1,-0.4);
+        glVertex2f(1,-0.2);
+      glEnd();
+    glPopMatrix();
 
     // Colision con la plataforma
     if(-tp <= x+1.0 && tp >= x+0.2 && y-0.4 <= -0.3){
@@ -373,36 +379,57 @@ void dibujarMarcoVerde() {
 // -----------------------BLOQUES-----------------------
 void dibujarBloque(float cx, float cy, float color){
 
-    glColor3f(1.0,color,0.0);
+  glColor3f(1.0,color,0.0);
+  glPushMatrix();
+    glTranslatef(cx,cy,0.0);
     glBegin(GL_LINE_LOOP);
-        glVertex2f(cx,cy);
-        glVertex2f(cx+lb,cy);
-        glVertex2f(cx+lb,cy-ab);
-        glVertex2f(cx,cy-ab);
+        glVertex2f(0,0);
+        glVertex2f(lb,0);
+        glVertex2f(lb,-ab);
+        glVertex2f(0,-ab);
     glEnd();
+  glPopMatrix();
 
 }
 
 void dibujarBloqueRoto(float cx, float cy){ 
 
   glColor3f(0.8,1.0,0.8);
-  glBegin(GL_LINE_LOOP);
-    glVertex2f(cx,cy);
-    glVertex2f(cx+lb/2,cy);
-    glVertex2f(cx+lb/2-0.25,cy-0.15);
-    glVertex2f(cx+lb/2+0.15,cy-0.4);
-    glVertex2f(cx+lb/2,cy-ab);
-    glVertex2f(cx,cy-ab);
-  glEnd();
-  glBegin(GL_LINE_LOOP);
-    glVertex2f(cx+lb/2+0.1,cy);
-    glVertex2f(cx+lb,cy);
-    glVertex2f(cx+lb,cy-ab);
-    glVertex2f(cx+lb/2+0.15,cy-ab);
-    glVertex2f(cx+lb/2+0.25,cy-0.4);
-    glVertex2f(cx+lb/2-0.1,cy-0.15);
-  glEnd();
+  glLineWidth(1.5);
+  glPushMatrix();
+    glTranslatef(cx,cy,0.0);
 
+    glBegin(GL_LINE_LOOP);
+      glVertex2f(0,0);
+      glVertex2f(lb/2,0);
+      glVertex2f(lb/2-0.25,-0.15);
+      glVertex2f(lb/2+0.15,-0.4);
+      glVertex2f(lb/2,-ab);
+      glVertex2f(0,-ab);
+    glEnd();
+
+    glBegin(GL_LINE_LOOP);
+      glVertex2f(lb/2+0.1,0);
+      glVertex2f(lb,0);
+      glVertex2f(lb,-ab);
+      glVertex2f(lb/2+0.15,-ab);
+      glVertex2f(lb/2+0.25,-0.4);
+      glVertex2f(lb/2-0.1,-0.15);
+    glEnd();
+
+    glBegin(GL_LINES);
+      glVertex2f(lb/2-0.25,-0.15);
+      glVertex2f(0,-0.15);
+      glVertex2f(lb/2+0.15,-0.4);
+      glVertex2f(0,-0.4);
+      glVertex2f(lb/2+0.25,-0.4);
+      glVertex2f(lb,-0.4);
+      glVertex2f(lb/2-0.1,-0.15);
+      glVertex2f(lb,-0.15);
+    glEnd();
+
+  glPopMatrix();
+  glLineWidth(2.0);
 }
 
 bool hayChoque(float x, float y){
@@ -626,9 +653,9 @@ void render(){
         dibujarBloques();
 
 
-        dibujarBloqueRoto(-3, 4);
-        dibujarBonusVelocidad(5,4,0);
-        dibujarBonusTamBase(0,2,1);
+      //  dibujarBloqueRoto(-3, -4);
+      //  dibujarBonusVelocidad(5,-4,0);
+      //  dibujarBonusTamBase(0,-4,1);
   }
   else{
     dibujarCara();
