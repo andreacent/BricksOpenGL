@@ -11,12 +11,14 @@
 #define PI 3.14159265358979f
 #define lb 1.9        // largo del bloque
 #define ab 0.5        // altura del bloque
+#define velPlataforma 0.2 // velocidad de la plataforma
 
 bool inicial = true, //true para inicializar los bonus y especiales una sola vez
      isLeftKeyPressed = false, isRightKeyPressed = false,
      velocidad = false, //bonus de velocidad activado o desactivado
      baseLarga = false,  //bonus de base activado o desactivado
      moviendose = false,
+     moviendoBonus =false,
      gameOver = false;
 
 float // variables para cuando el bloque se rompe
@@ -208,9 +210,12 @@ void dibujarBonusVelocidad(float x, float y, int bono){ //
     {
       if(!velocidad){
         velocidad = true;
+        printf("velocidad antes colision: %d\n", velocidadP);
         velocidadP += velocidadP*0.4;
+        printf("velocidad despues de colision: %d\n", velocidadP);
       }
-      if(bonus[bono][4] == -2) sumaBonus -= 1;
+      sumaBonus -= 1;
+      bonus[bono][4] = -10;
     }
 
 }
@@ -229,10 +234,13 @@ void dibujarBonusTamBase(float x, float y, int bono){ // largo 0.8 en X, alto 0.
     // Colision con la plataforma
     if(-tp <= x+1.0 && tp >= x+0.2 && y-0.4 <= -0.3){
       if(!baseLarga){
+        printf("tam base antes colision: %d\n", tam);
         tam += tam*0.15;
+        printf("tam base despues colision: %d\n", tam);
         baseLarga = true;
       }
-      if(bonus[bono][4] == -2) sumaBonus -= 1;
+      sumaBonus -= 1;
+      bonus[bono][4] = -10;
     }
 }
 
@@ -378,8 +386,8 @@ void dibujarBloque(float cx, float cy, float color){
     glBegin(GL_LINE_LOOP);
         glVertex2f(cx,cy);
         glVertex2f(cx+lb,cy);
-        glVertex2f(cx+lb,cy-0.5);
-        glVertex2f(cx,cy-0.5);
+        glVertex2f(cx+lb,cy-ab);
+        glVertex2f(cx,cy-ab);
     glEnd();
 
 }
@@ -392,14 +400,14 @@ void dibujarBloqueRoto(float cx, float cy){
     glVertex2f(cx+lb/2,cy);
     glVertex2f(cx+lb/2-0.25,cy-0.15);
     glVertex2f(cx+lb/2+0.15,cy-0.4);
-    glVertex2f(cx+lb/2,cy-0.5);
-    glVertex2f(cx,cy-0.5);
+    glVertex2f(cx+lb/2,cy-ab);
+    glVertex2f(cx,cy-ab);
   glEnd();
   glBegin(GL_LINE_LOOP);
     glVertex2f(cx+lb/2+0.1,cy);
     glVertex2f(cx+lb,cy);
-    glVertex2f(cx+lb,cy-0.5);
-    glVertex2f(cx+lb/2+0.15,cy-0.5);
+    glVertex2f(cx+lb,cy-ab);
+    glVertex2f(cx+lb/2+0.15,cy-ab);
     glVertex2f(cx+lb/2+0.25,cy-0.4);
     glVertex2f(cx+lb/2-0.1,cy-0.15);
   glEnd();
@@ -410,24 +418,24 @@ bool hayChoque(float x, float y){
     bool choca = false;
     float px = pelota[0], py = pelota[1];
 
-    if (px-radioP <= x+lb && px-radioP > x && py <= y && py >= y-0.5) {// choca del lado der del bloque
+    if (px-radioP <= x+lb && px-radioP > x && py <= y && py >= y-ab) {// choca del lado der del bloque
       xSpeed = -xSpeed;
       px = x + lb + radioP;
       choca = true;
     }
-    else if (px+radioP >= x && px+radioP < x +lb && py <= y && py >= y-0.5) {// choca del lado izq del bloque
+    else if (px+radioP >= x && px+radioP < x +lb && py <= y && py >= y-ab) {// choca del lado izq del bloque
       xSpeed = -xSpeed;
       px = x - radioP;
       choca = true;
     }
-    else if (px >= x && px < x+lb && y >= py-radioP && py-radioP >= y-0.5) {//  choca de la parte de arriba del bloque
+    else if (px >= x && px < x+lb && y >= py-radioP && py-radioP >= y-ab) {//  choca de la parte de arriba del bloque
       ySpeed = -ySpeed;
       py = y + radioP;
       choca = true;
     } 
-    else if (x <= px && px <= x+lb &&  py+radioP <= y && y-0.5 <= py+radioP) {// choca de la parte de abajo del bloque
+    else if (x <= px && px <= x+lb &&  py+radioP <= y && y-ab <= py+radioP) {// choca de la parte de abajo del bloque
       ySpeed = -ySpeed;
-      py = y - 0.5 - radioP;
+      py = y - ab - radioP;
       choca = true;
     }
     else if(( pow ((x-px),2) + pow(y-py,2) == pow (radioP,2))         //  choca con la esquina sup izq bloque
@@ -437,8 +445,8 @@ bool hayChoque(float x, float y){
       choca = true;
     }
 
-    else if (( pow ((x-px),2) + pow(y-0.5-py,2) == pow (radioP,2))          //  choca con la esquina inf izq bloque
-            || (pow((x+lb-px),2) + pow (y-0.5-py,2) == pow(radioP,2))) {//  choca con la esquina inf der bloque
+    else if (( pow ((x-px),2) + pow(y-ab-py,2) == pow (radioP,2))          //  choca con la esquina inf izq bloque
+            || (pow((x+lb-px),2) + pow (y-ab-py,2) == pow(radioP,2))) {//  choca con la esquina inf der bloque
       xSpeed = -xSpeed;
       ySpeed = -ySpeed;
       choca = true;
@@ -453,12 +461,14 @@ void movimientoBonus(int h){
   if (h > 0){
     if(sumaBonus > 0){
       for(int i=0; i<6; i++){
-        if(bloques[bonus[i][0]][bonus[i][1]] == -1) {
-          if(bonus[i][4] >= -1) bonus[i][4] -= 0.00000000001;  
-          else if(bonus[i][4] < -1 && bonus[i][4] != -10) sumaBonus -=1;
+        if(bloques[bonus[i][0]][bonus[i][1]] == -1 && bonus[i][4] > -5) {
+          bonus[i][4] -= 0.0001*0.0001;  
         }
+        else if(bloques[bonus[i][0]][bonus[i][1]] == -1 && bonus[i][4] <=-5 ) sumaBonus -= 1;
       }  
-    }
+    }    
+    glutTimerFunc(70,movimientoBonus,1);
+    glutPostRedisplay();
   }
 }
 
@@ -479,7 +489,10 @@ void dibujarBloques() {
                 case -1: //bloque eliminado 
                   esBonus = buscarBonus(i,j);
                   if (esBonus > -1 && bonus[esBonus][4] > 0){
-                    movimientoBonus(1);
+                    if(!moviendoBonus){
+                      moviendoBonus = true;
+                      glutTimerFunc(40,movimientoBonus,1);
+                    }
                     switch (bonus[esBonus][2]) {
                       case 0:
                         dibujarBonusVelocidad(bonus[esBonus][3],bonus[esBonus][4],esBonus);    
@@ -520,7 +533,6 @@ void dibujarBloques() {
 }
 
 /***************** FIN FUNCIONES PARA DIBUJAR *****************/
-
 /************************* MOVIMIENTO *************************/
 void movimientoPelota(int h){
   if (h > 0){
@@ -547,12 +559,6 @@ void dibujarCara(){
 
     glPushMatrix();
     glScalef(0.8,0.8,0.8);
-
-    printf("Puntos: %d\n", sumaGolpes);
-    if(velocidad) printf("bonus velocidad activado\n");
-    else printf("bonus velocidad desactivado\n");
-    if(baseLarga) printf("bonus base activado\n");
-    else printf("bonus base desactivado\n");
 
     if(gameOver){
         glTranslatef(0,-3.6,0);
@@ -583,7 +589,7 @@ void handleSpecialKeypress(int key, int x, int y) {
         case GLUT_KEY_LEFT:
             isLeftKeyPressed = true;
             if (!isRightKeyPressed) {
-                plataforma -= 0.2;
+                plataforma -= velPlataforma;
                 if( -tam+plataforma < -8.9) plataforma -= -tam+plataforma + 8.9;
                 if (!moviendose){
                   anguloP = 95 + rand()% 25;
@@ -595,7 +601,7 @@ void handleSpecialKeypress(int key, int x, int y) {
         case GLUT_KEY_RIGHT:
             isRightKeyPressed = true;
             if (!isLeftKeyPressed) {
-                plataforma += 0.2;
+                plataforma += velPlataforma;
                 if(tam+plataforma > 8.9) plataforma -= tam+plataforma - 8.9;
                 if (!moviendose){
                   anguloP = 40 + rand()% 39;
@@ -653,7 +659,15 @@ void render(){
     //------------- Dibujamos BLOQUES -------------
         dibujarBloques();
   }
-  else dibujarCara();
+  else{
+    dibujarCara();
+    printf("Puntos: %d\n", sumaGolpes);
+    if(velocidad) printf("bonus velocidad activado\n");
+    else printf("bonus velocidad desactivado\n");
+    if(baseLarga) printf("bonus base activado\n");
+    else printf("bonus base desactivado\n");
+    glutLeaveMainLoop();
+  }
 
   glFlush();
   glutSwapBuffers();
@@ -676,7 +690,8 @@ int main (int argc, char** argv) {
 
     glutSpecialFunc(handleSpecialKeypress);
     glutSpecialUpFunc(handleSpecialKeyReleased);
-
+    
     glutMainLoop();
+
     return 0;
 }
