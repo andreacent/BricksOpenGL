@@ -176,6 +176,8 @@ void dibujarBonusVelocidad(float x, float y){ //
     glVertex2f(x+0.3,y-0.6);
   glVertex2f(x+0.5,y-0.2);
   glEnd();
+
+
 }
 
 void dibujarBonusTamBase(float x, float y){ // largo 0.8 en X, alto 0.2 en Y
@@ -187,30 +189,6 @@ void dibujarBonusTamBase(float x, float y){ // largo 0.8 en X, alto 0.2 en Y
       glVertex2f(x+0.8,y-0.4);
       glVertex2f(x+0.8,y-0.2);
     glEnd();
-}
-
-// Bonus no se mueve
-void lanzarBonus(int h){
-  float x,y;
-
-  if (h>0){
-    for(int i=0; i<6; i++){
-      if(bloques[bonus[i][0]][bonus[i][1]] == -1 ){ 
-        x = bonus[i][3];
-        y = bonus[i][4];
-
-        if ( bonus[i][2] == 0 && bonus[i][1] >= -0.7) dibujarBonusTamBase(x+=0.75,y-=0.25);
-        else if( bonus[i][2] == 1 && bonus[i][1] >= 0) dibujarBonusVelocidad(x+=1,y-=0.25);
-
-        bonus[i][4] += -0.1;
-
-        glutTimerFunc(30,lanzarBonus,1);
-        glutPostRedisplay();
-      
-      }
-    }
-  }
-  
 }
 
 // -------------------- DIBUJOS BASE  ---------------------- 
@@ -237,10 +215,6 @@ void dibujarPlataforma() {
             glVertex2f(-tam+plataforma,-0.8);
         glEnd();
     glPopMatrix();
-}
-
-void calcularAngulo(float angulo = 0){
-  anguloP = 2 * (angulo - M_PI/2) - anguloP;
 }
 
 void dibujarPelota(float r) {
@@ -444,7 +418,7 @@ void dibujarBloques() {
                   }
                 break;
                 case -1:
-                  if (esBonus > -1 && bonus[esBonus][4] >= -0.2){
+                  if (esBonus > -1 && bonus[esBonus][4] > 0){
                     switch (bonus[esBonus][2]) {
                       case 0:
                         dibujarBonusVelocidad(bonus[esBonus][3],bonus[esBonus][4]);    
@@ -484,11 +458,11 @@ void movimiento(int h){
     //bonus
     if(sumaBonus > 0){
         for(int i=0; i<6; i++){
-          if(bloques[bonus[i][0]][bonus[i][1]] == -1 && bonus[i][4] >= -0.2){ 
-            bonus[i][4] += -0.1;  
+          if(bloques[bonus[i][0]][bonus[i][1]] == -1 && bonus[i][4] >= 0){ 
+            bonus[i][4] -= 0.000001 ;  
           }
-          else if(bonus[i][4] < -0.2){
-            sumaBonus -=1;
+          else if(bonus[i][4] < 0){
+            sumaBonus -= 1;
           }
         }   
     }
