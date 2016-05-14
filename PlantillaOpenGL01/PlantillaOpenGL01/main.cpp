@@ -211,7 +211,7 @@ void dibujarBonusVelocidad(float x, float y, int bono){ //
       printf("velocidad antes colision: %d\n", velocidadP);
       if(!velocidad){
         velocidad = true;
-        velocidadP += velocidadP*0.4;
+        velocidadP += velocidadP*0.4; // aumenta velocidad 40%
       }
       posBonus[bono][1] = -10;
     }
@@ -233,7 +233,7 @@ void dibujarBonusTamBase(float x, float y, int bono){ // largo 0.8 en X, alto 0.
     if(-tp <= x+1.0 && tp >= x+0.2 && y-0.4 <= -0.3){
       printf("tam base antes colision: %d\n", tam);
       if(!baseLarga){
-        tam += tam*0.15;
+        tam -= tam*0.15;   // disminuyes tam 15%
         baseLarga = true;
       }
       posBonus[bono][1] = -10;
@@ -249,15 +249,6 @@ void dibujarPlataforma(){
     glPushMatrix();
         glTranslatef(0.0,-8.2,0.0); 
         glColor3f(0.0,0.0,1.0);
-
-        if(baseLarga){
-          glBegin(GL_LINES);
-              glVertex2f(-tam+plataforma+0.3, -0.3);
-              glVertex2f(-tam+plataforma+0.3, -0.8);
-              glVertex2f(tam+plataforma-0.3, -0.3);
-              glVertex2f(tam+plataforma-0.3, -0.8);
-          glEnd();
-        } 
 
         glBegin(GL_LINE_LOOP);
             glVertex2f(-tam+plataforma,-0.3);
@@ -379,7 +370,7 @@ void dibujarMarcoVerde() {
     glPopMatrix();
 }
 
-// --------FIN DIBUJO CUANDO EL BLOQUE SE ROMPE--------
+// -----------------------BLOQUES-----------------------
 void dibujarBloque(float cx, float cy, float color){
 
     glColor3f(1.0,color,0.0);
@@ -633,6 +624,11 @@ void render(){
         dibujarMarcoVerde();
     //------------- Dibujamos BLOQUES -------------
         dibujarBloques();
+
+
+        dibujarBloqueRoto(-3, 4);
+        dibujarBonusVelocidad(5,4,0);
+        dibujarBonusTamBase(0,2,1);
   }
   else{
     dibujarCara();
