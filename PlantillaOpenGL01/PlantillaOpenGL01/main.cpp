@@ -210,8 +210,7 @@ void dibujarBonusVelocidad(float x, float y, int bono){ //
         velocidad = true;
         velocidadP += velocidadP*0.4;
       }
-      bonus[bono][4] = -10.0;
-      sumaBonus -= 1;
+      if(bonus[bono][4] == -2) sumaBonus -= 1;
     }
 
 }
@@ -233,8 +232,7 @@ void dibujarBonusTamBase(float x, float y, int bono){ // largo 0.8 en X, alto 0.
         tam += tam*0.15;
         baseLarga = true;
       }
-      bonus[bono][4] = -10.0;
-      sumaBonus -= 1;
+      if(bonus[bono][4] == -2) sumaBonus -= 1;
     }
 }
 
@@ -456,12 +454,10 @@ void movimientoBonus(int h){
     if(sumaBonus > 0){
       for(int i=0; i<6; i++){
         if(bloques[bonus[i][0]][bonus[i][1]] == -1) {
-          if(bonus[i][4] >= -1) bonus[i][4] -= 0.0000001;  
+          if(bonus[i][4] >= -1) bonus[i][4] -= 0.00000000001;  
           else if(bonus[i][4] < -1 && bonus[i][4] != -10) sumaBonus -=1;
         }
       }  
-      glutTimerFunc(220,movimientoBonus,1);
-      glutPostRedisplay(); 
     }
   }
 }
@@ -480,27 +476,7 @@ void dibujarBloques() {
               }              
 
               switch (bloques[i][j]) {
-                case 0:
-                  if(buscarEspeciales(i*7+j)) dibujarBloque(cx, cy, 1);//dibuja especiales
-                  else dibujarBloque(cx, cy, 0);    
-                break;
-                case 1:
-                  if(buscarEspeciales(i*7+j)) dibujarBloqueRoto(cx, cy);//dibuja especiales golpeados una vez
-                  else{
-                    bloques[i][j] = -1;
-                    sumaGolpes +=1;
-                    if (esBonus > -1) sumaBonus+=1; //incrementa para que se mueva el bonus
-                  }
-                break;
-                case 2:
-                  if(buscarEspeciales(i*7+j)){ 
-                    dibujarExplosion(cx,cy);              
-                    bloques[i][j] = -1;
-                    sumaGolpes +=1; 
-                    if (esBonus > -1) sumaBonus+=1; //incrementa para que se mueva el bonus
-                  }
-                break;
-                case -1:
+                case -1: //bloque eliminado 
                   esBonus = buscarBonus(i,j);
                   if (esBonus > -1 && bonus[esBonus][4] > 0){
                     movimientoBonus(1);
@@ -512,6 +488,26 @@ void dibujarBloques() {
                         dibujarBonusTamBase( bonus[esBonus][3],bonus[esBonus][4],esBonus);
                       break;
                     }
+                  }
+                break;
+                case 0: //el bloque no hay sido golpeado
+                  if(buscarEspeciales(i*7+j)) dibujarBloque(cx, cy, 1);//dibuja especiales
+                  else dibujarBloque(cx, cy, 0);    
+                break;
+                case 1: // bloques golpeados una vez
+                  if(buscarEspeciales(i*7+j)) dibujarBloqueRoto(cx, cy);
+                  else{
+                    bloques[i][j] = -1;
+                    sumaGolpes +=1;
+                    if (esBonus > -1) sumaBonus+=1; //incrementa para que se mueva el bonus
+                  }
+                break;
+                case 2: //bloques golpeados dos veces
+                  if(buscarEspeciales(i*7+j)){ 
+                    dibujarExplosion(cx,cy);              
+                    bloques[i][j] = -1;
+                    sumaGolpes +=1; 
+                    if (esBonus > -1) sumaBonus+=1; //incrementa para que se mueva el bonus
                   }
                 break;
               }
@@ -527,16 +523,13 @@ void dibujarBloques() {
 
 /************************* MOVIMIENTO *************************/
 void movimientoPelota(int h){
-  float v;
   if (h > 0){
-    //pelota
     pelota[0] = velocidadP*cos(anguloP)+ pelota[0];
     pelota[1] = velocidadP*sin(anguloP)+ pelota[1];
     glutTimerFunc(10,movimientoPelota,1);
     glutPostRedisplay();
   }
 }
-
 
 /************DIBUJA UNA CARA SI PIERDE O GANA************/
 void dibujarCara(){
@@ -584,7 +577,6 @@ void dibujarCara(){
     }
     glPopMatrix();
 }
-
 
 void handleSpecialKeypress(int key, int x, int y) {
     switch (key) {
