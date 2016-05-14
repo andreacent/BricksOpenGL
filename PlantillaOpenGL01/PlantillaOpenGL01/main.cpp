@@ -48,9 +48,10 @@ float plataforma = 0.0,      //posicion de la plataforma
 int bloques[5][7] = {{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},
                        {0,0,0,0,0,0,0},{0,0,0,0,0,0,0}},
     especiales[5] = {}, //arreglo para los bloques especiales 
-    bonus[6][3]= {},    /*{posicion x, posicion y, tipo de bono} 
+    bonus[6][5]= {},    /*{posicion x, posicion y, tipo de bono} 
                           (0 tamaño de la plataforma, 1 velocidad de la pelota} */
-    sumaGolpes=0;
+    sumaGolpes=0,
+    sumaBonus=0;
 
 using namespace std;
 
@@ -131,12 +132,12 @@ void generarEspeciales(){
     }
 }
 
-bool buscarBonus(int x, int y){
-  bool esta = false;
+int buscarBonus(int x, int y){
+  int esta = -1;
 
   for (int i = 0; i < 6; i++){
     if (x == bonus[i][0] && y == bonus[i][1]) {
-      esta = true;
+      esta = i;
       break;
     }
   }
@@ -150,13 +151,14 @@ void generarBonus(){
       do{
           i = rand()%5;
           j = rand()%7;
-      }while ( buscarBonus(i,j) );
+      }while ( buscarBonus(i,j) >= 0 );
         bonus[k][0] = i;
         bonus[k][1] = j;
         bonus[k][2] = rand()%2;
+        bonus[k][3] = 100;//j*2.5 - 8.4; //calcula posicion en x
+        bonus[k][4] = 100;//15 - i*1.25; // calcula posicion en y
     }   
 }
-
 
 /*********************** FUNCIONES PARA DIBUJAR ***********************/
 // -------- DIBUJOS PARA LA FORMA DE LOS BONUS  --------
@@ -187,35 +189,20 @@ void dibujarBonusTamBase(float x, float y){ // largo 0.8 en X, alto 0.2 en Y
     glEnd();
 }
 
-// INCOMPLETA
-void lanzarBonus(){
-    float x,y;
-
-    for(int i; i<6; i++){
-      if(bloques[bonus[i][0]][bonus[i][1]] == -1 ){ 
-        x = bonus[i][0];
-        y = bonus[i][1];
-
-        if ( bonus[i][2]==0 && bonus[i][1] >= -0.7) dibujarBonusTamBase(x,y);
-        else if( bonus[i][2]==1 && bonus[i][1] >= 0 ) dibujarBonusVelocidad(x,y);
-
-        bonus[i][1] += -0.1;
-      }
-    }
-}
-
 // Bonus no se mueve
 void lanzarBonus(int h){
+  float x,y;
+
   if (h>0){
     for(int i=0; i<6; i++){
       if(bloques[bonus[i][0]][bonus[i][1]] == -1 ){ 
-    
-        bonus[i][0] = bon[0];
-        bonus[i][1] = bon[1];
-        if ( (bonus[i][2]==0) && bonus[i][1] >= -0.7) dibujarBonusTamBase(bonus[i][0]+=0.75,bonus[i][1]-=0.25);
-        else if( (bonus[i][2]==1) && bonus[i][1] >= 0) dibujarBonusVelocidad(bonus[i][0]+=1,bonus[i][1]-=0.25);
+        x = bonus[i][3];
+        y = bonus[i][4];
 
-        bonus[i][1] -= 0.08;
+        if ( bonus[i][2] == 0 && bonus[i][1] >= -0.7) dibujarBonusTamBase(x+=0.75,y-=0.25);
+        else if( bonus[i][2] == 1 && bonus[i][1] >= 0) dibujarBonusVelocidad(x+=1,y-=0.25);
+
+        bonus[i][4] += -0.1;
 
         glutTimerFunc(30,lanzarBonus,1);
         glutPostRedisplay();
@@ -414,9 +401,7 @@ bool hayChoque(float x, float y){
 }
 
 void dibujarBloques() {
-
     int esBonus;
-
     glPushMatrix();
         
         glTranslatef(0.0,-8.2,0.0); //comparte eje con la pelota para revisar las colisiones mas facil
@@ -429,39 +414,45 @@ void dibujarBloques() {
                 if(hayChoque(cx,cy)) bloques[i][j] +=1; //revisa si hay un choque
               }              
 
+              // asignamos las posiciones a los bloques bonus
+              esBonus = buscarBonus(i,j);
+              if (esBonus > -1 && bonus[esBonus][3] == 100) {
+                  bonus[esBonus][3] = cx;
+                  bonus[esBonus][4] = cy;
+                  //dibujarBonusTamBase(cx,cy);   // deberian ser lo mismo pero no
+                  //dibujarBonusVelocidad( bonus[esBonus][3],bonus[esBonus][4]);
+                  //dibujarBonusTamBase( bonus[esBonus][3],bonus[esBonus][4]); // deberian ser lo mismo pero no
+                } 
+
               switch (bloques[i][j]) {
                 case 0:
-                  if(buscarEspeciales(i*7+j)) { //dibuja especiales
-                    dibujarBloque(cx, cy, 1);
-                  } 
-                  else {
-                    dibujarBloque(cx, cy, 0);       
-                  }
+                  if(buscarEspeciales(i*7+j)) dibujarBloque(cx, cy, 1);//dibuja especiales
+                  else dibujarBloque(cx, cy, 0);    
                 break;
                 case 1:
-                  if(buscarEspeciales(i*7+j)){ 
-                    dibujarBloqueRoto(cx, cy); //dibuja especiales golpeados una vez
-                  }
+                  if(buscarEspeciales(i*7+j)) dibujarBloqueRoto(cx, cy);//dibuja especiales golpeados una vez
                   else{
-                    esBonus = buscarBonus(i,j);
-                    if (esBonus > -1) {
-                      bon[0] = cx; // estas coord son necesarias para saber
-                      bon[1] = cy; // desde donde aparece el bonus
-                      lanzarBonus(1);
-                    }
                     bloques[i][j] = -1;
+                    if (esBonus > -1) sumaBonus+=1; //incrementa para que se mueva el bonus
                   }
                 break;
                 case 2:
                   if(buscarEspeciales(i*7+j)){ 
-                    dibujarExplosion(cx,cy);
-                    esBonus = buscarBonus(i,j);
-                    if (esBonus > -1) {
-                      bon[0] = cx; // estas coord son necesarias para saber
-                      bon[1] = cy; // desde donde aparece el bonus
-                      lanzarBonus(1);
-                    }                   
+                    dibujarExplosion(cx,cy);              
                     bloques[i][j] = -1;
+                    if (esBonus > -1) sumaBonus+=1; //incrementa para que se mueva el bonus
+                  }
+                break;
+                case -1:
+                  if (esBonus > -1 && bonus[esBonus][4] >= -0.2){
+                    switch (bonus[esBonus][2]) {
+                      case 0:
+                        dibujarBonusVelocidad(bonus[esBonus][3],bonus[esBonus][4]);    
+                      break;
+                      case 1:
+                        dibujarBonusTamBase( bonus[esBonus][3],bonus[esBonus][4]);
+                      break;
+                    }
                   }
                 break;
               }
@@ -477,9 +468,10 @@ void dibujarBloques() {
 }
 
 /************************* MOVIMIENTO *************************/
-void moverPelota(int h){
+void movimiento(int h){
   float v;
   if (h > 0){
+    //pelota
     if(velocidad){
       v = velocidadP + velocidadP * 0.4;
       pelota[0] = v*cos(anguloP)+ pelota[0];
@@ -488,8 +480,20 @@ void moverPelota(int h){
       pelota[0] = velocidadP*cos(anguloP)+ pelota[0];
       pelota[1] = velocidadP*sin(anguloP)+ pelota[1];
     }
-          
-    glutTimerFunc(10,moverPelota,1);
+
+    //bonus
+    if(sumaBonus > 0){
+        for(int i=0; i<6; i++){
+          if(bloques[bonus[i][0]][bonus[i][1]] == -1 && bonus[i][4] >= -0.2){ 
+            bonus[i][4] += -0.1;  
+          }
+          else if(bonus[i][4] < -0.2){
+            sumaBonus -=1;
+          }
+        }   
+    }
+    
+    glutTimerFunc(10,movimiento,1);
     glutPostRedisplay();
   }
 }
@@ -546,7 +550,7 @@ void handleSpecialKeypress(int key, int x, int y) {
                 else if (plataforma > -6.4 && baseLarga) plataforma -= 0.2;
                 if (!moviendose){
                   anguloP = 95 + rand()% 25;
-                  glutTimerFunc(10,moverPelota,1);
+                  glutTimerFunc(10,movimiento,1);
                   moviendose = true;
                 } 
             }
@@ -559,7 +563,7 @@ void handleSpecialKeypress(int key, int x, int y) {
                 else if (plataforma < 6.4 && baseLarga) plataforma += 0.2;
                 if (!moviendose){
                   anguloP = 40 + rand()% 39;
-                  glutTimerFunc(10,moverPelota,1);
+                  glutTimerFunc(10,movimiento,1);
                   moviendose = true;
                 } 
             }
@@ -617,8 +621,8 @@ void render(){
 
     //------------- Dibujo Bonus para probar -------------
 
-      //dibujarBonusTamBase(0.4,-0.3,0.5);
-      //dibujarBonusVelocidad(0.4,-0.3,0.5);
+      //dibujarBonusTamBase(0.4,-0.3);
+     // dibujarBonusVelocidad(0.4,-0.3);
 
   }else{
     dibujarCara();
