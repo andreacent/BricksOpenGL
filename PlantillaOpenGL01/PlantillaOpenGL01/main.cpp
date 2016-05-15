@@ -34,6 +34,7 @@ float // variables para cuando el bloque se rompe
       posInicial[8][2] = {{1,0},{0,0},{0,1},{0,0},{1,0},{1,0},{1,0},{0,0}}, 
       anguloPedazos[8] = {-330,-280,-90,-180,220,-60,320,-100},
       posBonus[6][2],  //posicion de los bonos
+      posEspeciales[5][3],  //posicion de los bonos y suma
       explota[2],  
       // PLATAFORMA
       plataforma = 0.0, //posicion
@@ -41,12 +42,10 @@ float // variables para cuando el bloque se rompe
 
 int bloques[5][7] = {{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},
                        {0,0,0,0,0,0,0},{0,0,0,0,0,0,0}}, //matriz de bloques
-    especiales[5],  //arreglo para los bloques especiales 
-    bonus[6][3],    /*{i, j, tipo de bono} 
-                      i,j son los indices de la matriz bloques
-                      tipo de bonus: 0 velocidad de la pelota, 
-                                     1 tamano de la plataforma */
-    destruidos=0;   //cantidad de bloques destruidos
+    especiales[5],   //arreglo para los bloques especiales 
+    bonus[6][2],        /*bloque y tipo de bonus: 0 velocidad de la pelota, 
+                                              1 tamano de la plataforma */
+    destruidos=0;       //cantidad de bloques destruidos
 
 // PELOTA
 GLfloat radioP = 0.3f;            // Radio de la pelota.
@@ -107,12 +106,12 @@ void changeViewport(int w, int h) {
 
 /********************** ESPECIALES Y BONUS **********************/
 // Busca si un bloque es especial o es un bonus 
-bool buscarEspeciales(int x){
-  bool esta = false;
+int buscarEspeciales(int x){
+  int esta = -1;
 
   for (int i = 0; i < cbe; i++){
     if (x == especiales[i]) {
-      esta = true;
+      esta = i;
       break;
     }
   }
@@ -120,11 +119,17 @@ bool buscarEspeciales(int x){
 }
 
 void generarEspeciales(){
-    int r;
-    for (int i = 0; i < cbe; i++){
-        do r = rand()%35; while ( buscarEspeciales(r) ) ;
-        especiales[i] = r;
-    }
+  int i,j,r;
+  for (int k = 0; k < cbe; k++){
+    do{
+        i = rand()%5;
+        j = rand()%7;
+        r = i*7+j;
+    }while ( buscarEspeciales(r) > -1 );
+    especiales[k] = r;
+    posEspeciales[k][0] = j*2.5 - 8.4 + 1; // calcula posicion en x
+    posEspeciales[k][1] = 15 - i*1.25 - 0.25; // calcula posicion en y
+  }
 }
 
 int buscarBonus(int x){
@@ -169,20 +174,17 @@ void dibujarCirculo(float px, float py, float radio = 0.14, float col = 1) {
     glEnd();
 }
 
-void dibujarExplosion(float x, float y){
-
-    explota[0] = x;
-    explota[1] = y;
-
-    glPushMatrix();
-      glTranslatef(explota[0]+0.75,explota[1]-0.25,0.0); 
-      for (int i = 0; i < 8; i++){
-        dibujarCirculo(posInicial[i][0], posInicial[i][1]);
-        posInicial[i][0] = 0.1*cos(anguloPedazos[i])+ posInicial[i][0];
-        posInicial[i][1] = 0.1*sin(anguloPedazos[i])+ posInicial[i][1];      
-      }
-      glutPostRedisplay();
-    glPopMatrix();  
+void dibujarExplosion(int b){
+  float x, y;
+  glPushMatrix();
+    glTranslatef(posEspeciales[b][0],posEspeciales[b][1],0.0); 
+    for (int i = 0; i < 8; i++){    
+      x = 0.1*cos(anguloPedazos[i])+ (posInicial[i][0]+posEspeciales[b][2]); 
+      y = 0.1*sin(anguloPedazos[i])+ (posInicial[i][1]+posEspeciales[b][2]);
+      dibujarCirculo(x, y);
+      posEspeciales[b][2] += 0.1;
+    }
+  glPopMatrix();  
 }
 
 // -------- DIBUJOS PARA LA FORMA DE LOS BONUS  --------
@@ -472,7 +474,7 @@ bool hayChoque(float x, float y){
 }
 
 void dibujarBloques() {
-  int esBonus;
+  int esBonus, esEspecial;
   float cx = -8.4, cy = 15;
 
   glPushMatrix();
@@ -484,6 +486,8 @@ void dibujarBloques() {
         if (bloques[i][j] > -1){
           if(hayChoque(cx,cy)) bloques[i][j] +=1; //revisa si hay un choque
         }              
+
+        esEspecial = buscarEspeciales(i*7+j);
 
         switch (bloques[i][j]) {
           case -1: //bloque eliminado 
@@ -499,21 +503,23 @@ void dibujarBloques() {
               }
               if(posBonus[esBonus][1] > -9) posBonus[esBonus][1] -= vb; 
             }
+            if(esEspecial > -1 && posEspeciales[esEspecial][2] < 100){
+              dibujarExplosion(esEspecial);
+            }
           break;
           case 0: //el bloque no hay sido golpeado
-            if(buscarEspeciales(i*7+j)) dibujarBloque(cx, cy, 1);//dibuja especiales
+            if(esEspecial > -1) dibujarBloque(cx, cy, 1);//dibuja especiales
             else dibujarBloque(cx, cy, 0);    
           break;
           case 1: // bloques golpeados una vez
-            if(buscarEspeciales(i*7+j)) dibujarBloqueRoto(cx, cy);
+            if(esEspecial > -1) dibujarBloqueRoto(cx, cy);
             else{
               bloques[i][j] = -1;
               destruidos +=1;
             }
           break;
           case 2: //bloques golpeados dos veces
-            if(buscarEspeciales(i*7+j)){ 
-              dibujarExplosion(cx,cy);              
+            if(esEspecial > -1){              
               bloques[i][j] = -1;
               destruidos +=1; 
             }
