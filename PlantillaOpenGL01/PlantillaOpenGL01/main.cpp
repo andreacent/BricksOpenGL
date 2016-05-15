@@ -20,10 +20,10 @@ using namespace std;
 #define ab 0.5    // altura del bloque
 #define vp 0.2    // velocidad con la que se mueve la plataforma
 #define vb 0.014  // velocidad con la que caen los bonos
-#define ve 0.01   // velocidad de la explosion
+#define ve 0.008   // velocidad de la explosion
 #define cbe 5     // cantidad de bloques especiales
 #define cbb 6     // cantidad de bloques con bonus
-#define cpb 10    // cantidad de pedazos cuando se rompe bloque
+#define cpb 8    // cantidad de pedazos cuando se rompe bloque
 
 bool isLeftKeyPressed = false, isRightKeyPressed = false,
      inicial = true,        //true para inicializar los bonus y especiales una sola vez
@@ -33,10 +33,9 @@ bool isLeftKeyPressed = false, isRightKeyPressed = false,
      gameOver = false;      
 
 float // variables para cuando el bloque se rompe
-      posInicial[cpb][2] = {{1,0.3},{0,0.4},{0.7,1},{1,0},{1,0},{-0.9,1},{1.1,1},{-0.1,1},{1,0},{0.1,0}}, 
-      anguloPedazos[cpb] = {0.17,0.45,0.78,1.4,5,3,1.8,2.5,4.5,0.7},
-      posBonus[6][2],       //posicion de los bonos
-      posEspeciales[5][3],  //posicion de los bonos y suma
+      posInicial[cpb][2] = {{0.1,0.1},{0,0},{0,0.1},{0.1,0},{0.1,-0.1},{0,0},{0,0.1},{0.1,0.1}}, 
+      posBonus[cbb][2] = {},       //posicion de los bonos
+      posEspeciales[cbe][3] = {},  //posicion de los bonos y suma
       // PLATAFORMA
       plataforma = 0.0, //posicion
       tam = 2.0;             
@@ -44,8 +43,8 @@ float // variables para cuando el bloque se rompe
 int bloques[5][7] = {{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},
                        {0,0,0,0,0,0,0},{0,0,0,0,0,0,0}}, //matriz de bloques
     destruidos=0,    //cantidad de bloques destruidos
-    especiales[5],   //arreglo para los bloques especiales 
-    bonus[6][2];     //bloque y tipo de bonus: 0 velocidad pelota, 1 tam plataforma 
+    especiales[cbe],   //arreglo para los bloques especiales 
+    bonus[cbb][2] ={};     //bloque y tipo de bonus: 0 velocidad pelota, 1 tam plataforma 
 
 // PELOTA
 GLfloat radioP = 0.3f;            // Radio de la pelota.
@@ -161,7 +160,7 @@ void generarBonus(){
 
 /*********************** FUNCIONES PARA DIBUJAR ***********************/
 // --------DIBUJO CUANDO EL BLOQUE ESPECIAL SE ROMPE--------
-void dibujarCirculo(float px, float py, float radio = 0.14, float col = 1) {
+void dibujarCirculo(float px, float py, float radio = 0.1, float col = 1) {
     float x,y;
     glPointSize(2.0);
     glColor3f(1.0,1.0,col);
@@ -178,15 +177,27 @@ void dibujarExplosion(int b){
   float x, y;
   glPushMatrix();
     glTranslatef(posEspeciales[b][0],posEspeciales[b][1],0.0); 
-    for (int i = 0; i < 8; i++){    
+    for (int i = 0; i < 4; i++){    
       if(posInicial[i][0] > 0)
-        x = 0.01*cos(anguloPedazos[i])+ (posInicial[i][0]+posEspeciales[b][2]+4.0); 
+        x = posInicial[i][0]+posEspeciales[b][2]+1.0; 
       else 
-        x = 0.01*cos(anguloPedazos[i])+ (posInicial[i][0]-posEspeciales[b][2]);
+        x = posInicial[i][0]-posEspeciales[b][2]-2.0;
       if(posInicial[i][1] > 0)
-        y = 0.01*sin(anguloPedazos[i])+ (posInicial[i][1]+posEspeciales[b][2]+2.0);
+        y = posInicial[i][1]+posEspeciales[b][2];
       else 
-        y = 0.01*sin(anguloPedazos[i])+ (posInicial[i][1]-posEspeciales[b][2]-1.0);
+        y = posInicial[i][1]-posEspeciales[b][2]-0.25;
+      dibujarCirculo(x, y);
+      posEspeciales[b][2] += ve;
+    }
+    for (int i = 4; i < 8; i++){    
+      if(posInicial[i][0] > 0)
+        x = posInicial[i][0]+posEspeciales[b][2]+2.0;
+      else 
+        x = posInicial[i][0]-posEspeciales[b][2]-0.5;
+      if(posInicial[i][1] > 0)
+        y = posInicial[i][1]+posEspeciales[b][2]+0.25;
+      else 
+        y = posInicial[i][1]-posEspeciales[b][2]-1.5;
       dibujarCirculo(x, y);
       posEspeciales[b][2] += ve;
     }
