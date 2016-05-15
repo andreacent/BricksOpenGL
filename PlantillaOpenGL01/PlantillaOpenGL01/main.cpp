@@ -20,7 +20,7 @@ using namespace std;
 #define ab 0.5    // altura del bloque
 #define vp 0.2    // velocidad con la que se mueve la plataforma
 #define vb 0.014  // velocidad con la que caen los bonos
-#define ve 0.01  // velocidad de la explosion
+#define ve 0.01   // velocidad de la explosion
 #define cbe 5     // cantidad de bloques especiales
 #define cbb 6     // cantidad de bloques con bonus
 
@@ -42,10 +42,9 @@ float // variables para cuando el bloque se rompe
 
 int bloques[5][7] = {{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},
                        {0,0,0,0,0,0,0},{0,0,0,0,0,0,0}}, //matriz de bloques
+    destruidos=0,    //cantidad de bloques destruidos
     especiales[5],   //arreglo para los bloques especiales 
-    bonus[6][2],        /*bloque y tipo de bonus: 0 velocidad de la pelota, 
-                                              1 tamano de la plataforma */
-    destruidos=0;       //cantidad de bloques destruidos
+    bonus[6][2];     //bloque y tipo de bonus: 0 velocidad pelota, 1 tam plataforma 
 
 // PELOTA
 GLfloat radioP = 0.3f;            // Radio de la pelota.
