@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <ctime>
 #include <stdio.h>
+#include <string.h>
 //#include <GL\glew.h>
 //#include <GL\freeglut.h>
 #include <GL/freeglut.h>
@@ -54,6 +55,7 @@ GLfloat anguloP = 40.0f;          // Angulo con el que se mueve la pelota;
 GLfloat velocidadP = 0.00001;     // Velocidad de la pelota
 GLfloat pelota[2] = {0.0f,0.0f};  // Centro de la pelota.
 
+
 void ejesCoordenada(float w) {
   
   glLineWidth(w);
@@ -90,6 +92,58 @@ void ejesCoordenada(float w) {
   glEnd();
   glLineWidth(1.0);
 }
+
+// -------------------------------TEXTO-------------------------------
+typedef enum { MODE_BITMAP } mode_type;
+
+static mode_type mode;
+static int font_index;
+
+void imprimir_bitmap_string(void* font, const char* s){
+   if (s && strlen(s)) {
+      while (*s) {
+         glutBitmapCharacter(font, *s);
+         s++;
+      }
+   }
+}
+
+void my_init(){
+   mode = MODE_BITMAP;
+   font_index = 0;
+}
+
+void dibujarTexto(int n) {
+  void* bitmap_fonts[2] = {
+    GLUT_BITMAP_9_BY_15,
+    GLUT_BITMAP_HELVETICA_10,   
+  };
+
+  const char* bitmap_font_names[3] = {
+    "¡FELICIDADES!",
+    "PERDISTE",  
+    "Usa las flechas para comenzar",
+  };
+
+  glColor3f(0.0,0.0,1.0);
+ 
+  glRasterPos2f(-1.5,-5.0);
+  switch (n) {
+    case 0:
+      imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[0]);   
+    break;
+    case 1:
+      imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[1]);
+    break;
+    case 2:
+      glRasterPos2f(-4.5,8);
+      imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[2]);
+    break;
+  }
+
+}
+// ----------------------------FIN TEXTO----------------------------
+
 
 void changeViewport(int w, int h) {
   float aspectradio;
@@ -576,6 +630,7 @@ void dibujarCara(){
                 glVertex2f(x,y);
             }
         glEnd();
+        dibujarTexto(1);
     }
     else{
         glTranslatef(0,-0.5,0);
@@ -587,6 +642,7 @@ void dibujarCara(){
                 glVertex2f(x,y);
             }
         glEnd();
+        dibujarTexto(0);
     }
     glPopMatrix();
 }
@@ -662,6 +718,8 @@ void render(){
     inicial = false;
   }
 
+  if(!moviendose) dibujarTexto(2);
+
   if(destruidos < 35 && !gameOver){
     //------------- Dibujamos PLATAFORMA -------------          
         dibujarPlataforma();
@@ -689,6 +747,8 @@ int main (int argc, char** argv) {
     glutCreateWindow("Bricks");
     glutReshapeFunc(changeViewport);
     glutDisplayFunc(render);
+
+    my_init();
 
     //GLenum err = glewInit();
     //if (GLEW_OK != err) {
