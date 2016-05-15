@@ -122,7 +122,7 @@ void dibujarTexto(int n) {
     "¡FELICIDADES!",
     "PERDISTE",  
     "Usa las flechas para comenzar",
-    "Presiona Space para reanudar juego",
+    "Presiona Space para reanudar el juego",
   };
 
   glColor3f(0.0,0.0,1.0);
@@ -140,7 +140,7 @@ void dibujarTexto(int n) {
       imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[n]);
     break;
     case 3:
-      glRasterPos2f(-5,8);
+      glRasterPos2f(-5.5,8);
       imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[n]);
     break;
     default: break;
@@ -663,7 +663,7 @@ void movimientoPelota(int h){
 void controlKey (unsigned char key, int xmouse, int ymouse){   
     switch (key){
         case ' ': // pausa juego
-          if(!pausado) pausado = true;
+          if(!pausado && moviendose) pausado = true;
           else pausado = false;
         break;
         default: break;
