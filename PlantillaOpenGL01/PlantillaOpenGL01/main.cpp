@@ -7,6 +7,7 @@
 //#include <GL\freeglut.h>
 #include <GL/freeglut.h>
 #include <GL/gl.h>
+#include <GL/glut.h>
 
 using namespace std;
 
@@ -206,8 +207,8 @@ void dibujarBonusVelocidad(float x, float y, int bono){
     || (y-0.5 <= -0.3 && tam+plataforma >= x+0.8 && -tam+plataforma <= x+0.8) //(0.8,-0.5) dentro de la plataforma
     || (y <= -0.3 && tam+plataforma >= x+0.7 && -tam+plataforma <= x+0.7)     //(0.7,0) dentro de la plataforma
     || (y <= -0.3 && tam+plataforma >= x && -tam+plataforma <= x)             //(0,0) dentro de la plataforma
-    || (y-0.6 <= -0.3 && x+0.3 && -tam+plataforma <= x+0.3)                   //(0.3,-0.6) dentro de la plataforma
-    || (y-0.6 <= 0.3 && tam+plataforma <= x+0.6 && tam+plataforma >= x+0.5))   
+    || (y-0.6 <= -0.3 && tam+plataforma >= x+0.3 && -tam+plataforma <= x+0.3) //(0.3,-0.6) dentro de la plataforma
+    || (y-0.6 <= -0.3 && tam+plataforma <= x+0.6 && tam+plataforma >= x+0.5))   
   {
     printf("bonus Velocidad\n");
     if(!velocidad){
@@ -220,7 +221,7 @@ void dibujarBonusVelocidad(float x, float y, int bono){
   }
 }
 
-void dibujarBonusTamBase(float x, float y, int bono){ // largo 0.8 en X, alto 0.2 en Y
+void dibujarBonusTamBase(float x, float y, int bono){ 
 
     glPushMatrix();
       glTranslatef(x,y,0.0);
@@ -540,7 +541,6 @@ void dibujarCara(){
     glEnd();
 
     glPointSize(2.0);
-
     glPushMatrix();
     glScalef(0.8,0.8,0.8);
 
@@ -663,7 +663,7 @@ int main (int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowSize(800,600);
-    glutCreateWindow("Opengl");
+    glutCreateWindow("Bricks");
     glutReshapeFunc(changeViewport);
     glutDisplayFunc(render);
 
