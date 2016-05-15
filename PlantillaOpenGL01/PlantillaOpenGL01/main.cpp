@@ -33,8 +33,8 @@ bool isLeftKeyPressed = false, isRightKeyPressed = false,
      gameOver = false;      
 
 float // variables para cuando el bloque se rompe
-      posInicial[cpb][2] = {{-1,0},{0,0},{0,1},{-1,0},{1,0},{0,-1},{1,0},{0,0},{-1,0},{0,0}}, 
-      anguloPedazos[cpb] = {10,20,45,56,79,92,120,267,75,30},
+      posInicial[cpb][2] = {{1,0.3},{0,0.4},{0.7,1},{1,0},{1,0},{-0.9,1},{1.1,1},{-0.1,1},{1,0},{0.1,0}}, 
+      anguloPedazos[cpb] = {0.17,0.45,0.78,1.4,5,3,1.8,2.5,4.5,0.7},
       posBonus[6][2],       //posicion de los bonos
       posEspeciales[5][3],  //posicion de los bonos y suma
       // PLATAFORMA
@@ -178,15 +178,15 @@ void dibujarExplosion(int b){
   float x, y;
   glPushMatrix();
     glTranslatef(posEspeciales[b][0],posEspeciales[b][1],0.0); 
-    for (int i = 0; i < cpb; i++){    
+    for (int i = 0; i < 8; i++){    
       if(posInicial[i][0] > 0)
-        x = 0.01*cos(anguloPedazos[i])+ (posInicial[i][0]+posEspeciales[b][2]); 
+        x = 0.01*cos(anguloPedazos[i])+ (posInicial[i][0]+posEspeciales[b][2]+4.0); 
       else 
         x = 0.01*cos(anguloPedazos[i])+ (posInicial[i][0]-posEspeciales[b][2]);
       if(posInicial[i][1] > 0)
-        y = 0.01*sin(anguloPedazos[i])+ (posInicial[i][1]+posEspeciales[b][2]);
+        y = 0.01*sin(anguloPedazos[i])+ (posInicial[i][1]+posEspeciales[b][2]+2.0);
       else 
-        y = 0.01*sin(anguloPedazos[i])+ (posInicial[i][1]-posEspeciales[b][2]);
+        y = 0.01*sin(anguloPedazos[i])+ (posInicial[i][1]-posEspeciales[b][2]-1.0);
       dibujarCirculo(x, y);
       posEspeciales[b][2] += ve;
     }
