@@ -23,6 +23,7 @@ using namespace std;
 #define ve 0.01   // velocidad de la explosion
 #define cbe 5     // cantidad de bloques especiales
 #define cbb 6     // cantidad de bloques con bonus
+#define cpb 10    // cantidad de pedazos cuando se rompe bloque
 
 bool isLeftKeyPressed = false, isRightKeyPressed = false,
      inicial = true,        //true para inicializar los bonus y especiales una sola vez
@@ -32,8 +33,8 @@ bool isLeftKeyPressed = false, isRightKeyPressed = false,
      gameOver = false;      
 
 float // variables para cuando el bloque se rompe
-      posInicial[8][2] = {{1,0},{0,0},{0,-1},{2,0},{1,0},{2,0},{1,0},{0,0}}, 
-      anguloPedazos[8] = {-330,-280,-90,-180,220,-60,320,-100},
+      posInicial[cpb][2] = {{-1,0},{0,0},{0,1},{-1,0},{1,0},{0,-1},{1,0},{0,0},{-1,0},{0,0}}, 
+      anguloPedazos[cpb] = {10,20,45,56,79,92,120,267,75,30},
       posBonus[6][2],       //posicion de los bonos
       posEspeciales[5][3],  //posicion de los bonos y suma
       // PLATAFORMA
@@ -177,7 +178,7 @@ void dibujarExplosion(int b){
   float x, y;
   glPushMatrix();
     glTranslatef(posEspeciales[b][0],posEspeciales[b][1],0.0); 
-    for (int i = 0; i < 8; i++){    
+    for (int i = 0; i < cpb; i++){    
       if(posInicial[i][0] > 0)
         x = 0.01*cos(anguloPedazos[i])+ (posInicial[i][0]+posEspeciales[b][2]); 
       else 
@@ -508,7 +509,7 @@ void dibujarBloques() {
               }
               if(posBonus[esBonus][1] > -9) posBonus[esBonus][1] -= vb; 
             }
-            if(esEspecial > -1 && posEspeciales[esEspecial][2] < 50){
+            if(esEspecial > -1 && posEspeciales[esEspecial][2] < 5){
               dibujarExplosion(esEspecial);
             }
           break;
