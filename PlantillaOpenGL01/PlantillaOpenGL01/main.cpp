@@ -19,7 +19,8 @@ using namespace std;
 #define lb 1.9    // largo del bloque
 #define ab 0.5    // altura del bloque
 #define vp 0.2    // velocidad con la que se mueve la plataforma
-#define vb 0.01   // velocidad con la que caen los bonos
+#define vb 0.014  // velocidad con la que caen los bonos
+#define ve 0.01  // velocidad de la explosion
 #define cbe 5     // cantidad de bloques especiales
 #define cbb 6     // cantidad de bloques con bonus
 
@@ -33,9 +34,8 @@ bool isLeftKeyPressed = false, isRightKeyPressed = false,
 float // variables para cuando el bloque se rompe
       posInicial[8][2] = {{1,0},{0,0},{0,1},{0,0},{1,0},{1,0},{1,0},{0,0}}, 
       anguloPedazos[8] = {-330,-280,-90,-180,220,-60,320,-100},
-      posBonus[6][2],  //posicion de los bonos
+      posBonus[6][2],       //posicion de los bonos
       posEspeciales[5][3],  //posicion de los bonos y suma
-      explota[2],  
       // PLATAFORMA
       plataforma = 0.0, //posicion
       tam = 2.0;             
@@ -179,10 +179,16 @@ void dibujarExplosion(int b){
   glPushMatrix();
     glTranslatef(posEspeciales[b][0],posEspeciales[b][1],0.0); 
     for (int i = 0; i < 8; i++){    
-      x = 0.1*cos(anguloPedazos[i])+ (posInicial[i][0]+posEspeciales[b][2]); 
-      y = 0.1*sin(anguloPedazos[i])+ (posInicial[i][1]+posEspeciales[b][2]);
+      if(posInicial[i][0] > 0)
+        x = 0.01*cos(anguloPedazos[i])+ (posInicial[i][0]+posEspeciales[b][2]); 
+      else 
+        x = 0.01*cos(anguloPedazos[i])+ (posInicial[i][0]-posEspeciales[b][2]);
+      if(posInicial[i][1] > 0)
+        y = 0.01*sin(anguloPedazos[i])+ (posInicial[i][1]+posEspeciales[b][2]);
+      else 
+        y = 0.01*sin(anguloPedazos[i])+ (posInicial[i][1]-posEspeciales[b][2]);
       dibujarCirculo(x, y);
-      posEspeciales[b][2] += 0.1;
+      posEspeciales[b][2] += ve;
     }
   glPopMatrix();  
 }
@@ -503,7 +509,7 @@ void dibujarBloques() {
               }
               if(posBonus[esBonus][1] > -9) posBonus[esBonus][1] -= vb; 
             }
-            if(esEspecial > -1 && posEspeciales[esEspecial][2] < 100){
+            if(esEspecial > -1 && posEspeciales[esEspecial][2] < 50){
               dibujarExplosion(esEspecial);
             }
           break;
