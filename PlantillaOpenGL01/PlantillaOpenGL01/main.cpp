@@ -118,10 +118,11 @@ void dibujarTexto(int n) {
     GLUT_BITMAP_HELVETICA_10,   
   };
 
-  const char* bitmap_font_names[3] = {
+  const char* bitmap_font_names[4] = {
     "¡FELICIDADES!",
     "PERDISTE",  
-    "Usa las flechas para comenzar ",
+    "Usa las flechas para comenzar",
+    "Presiona Space para reanudar juego",
   };
 
   glColor3f(0.0,0.0,1.0);
@@ -129,15 +130,20 @@ void dibujarTexto(int n) {
   glRasterPos2f(-1.5,-5.0);
   switch (n) {
     case 0:
-      imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[0]);   
+      imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[n]);   
     break;
     case 1:
-      imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[1]);
+      imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[n]);
     break;
     case 2:
       glRasterPos2f(-4.5,8);
-      imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[2]);
+      imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[n]);
     break;
+    case 3:
+      glRasterPos2f(-5,8);
+      imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[n]);
+    break;
+    default: break;
   }
 
 }
@@ -333,7 +339,7 @@ void dibujarPlataforma(){
 void dibujarPelota(float r) {
   glLineWidth(1.0);
   glPushMatrix();
-    if (moviendose && velocidadP > 0.0){
+    if (moviendose && !pausado && velocidadP > 0.0){
       pelota[0] = pelota[0] + xSpeed*velocidadP*cos(anguloP);
       pelota[1] = pelota[1] + ySpeed*velocidadP*sin(anguloP);
     }
@@ -346,7 +352,7 @@ void dibujarPelota(float r) {
         }
     glEnd();
 
-    if(moviendose){
+    if(!pausado && moviendose){
         pelota[0] += xSpeed;
         pelota[1] += ySpeed;
     
@@ -558,7 +564,7 @@ void dibujarBloques() {
         switch (bloques[i][j]) {
           case -1: //bloque eliminado 
             esBonus = buscarBonus(i*7+j);
-            if (esBonus > -1 && posBonus[esBonus][1] > 0){
+            if (!pausado && esBonus > -1 && posBonus[esBonus][1] > 0){
               switch (bonus[esBonus][1]) {
                 case 0:
                   dibujarBonusVelocidad(posBonus[esBonus][0],posBonus[esBonus][1],esBonus);    
@@ -569,7 +575,7 @@ void dibujarBloques() {
               }
               if(posBonus[esBonus][1] > -9) posBonus[esBonus][1] -= vb; 
             }
-            if(esEspecial > -1 && posEspeciales[esEspecial][2] < 5){
+            if(!pausado && esEspecial > -1 && posEspeciales[esEspecial][2] < 5){
               dibujarExplosion(esEspecial);
             }
           break;
@@ -653,12 +659,24 @@ void movimientoPelota(int h){
   }
 }
 
+/******************************* KEYBOARD *****************************/
+void controlKey (unsigned char key, int xmouse, int ymouse){   
+    switch (key){
+        case ' ': // pausa juego
+          if(!pausado) pausado = true;
+          else pausado = false;
+        break;
+        default: break;
+    }
+    glutPostRedisplay(); 
+}
+
 void handleSpecialKeypress(int key, int x, int y) {
     switch (key) {
         case GLUT_KEY_LEFT:
             isLeftKeyPressed = true;
             if (!isRightKeyPressed) {
-                plataforma -= vp;
+                if(!pausado) plataforma -= vp;
                 if (!moviendose){
                   anguloP = 95 + rand()% 25;
                   glutTimerFunc(10,movimientoPelota,1);
@@ -669,7 +687,7 @@ void handleSpecialKeypress(int key, int x, int y) {
         case GLUT_KEY_RIGHT:
             isRightKeyPressed = true;
             if (!isLeftKeyPressed) {
-                plataforma += vp;
+                if(!pausado) plataforma += vp;
                 if (!moviendose){
                   anguloP = 40 + rand()% 39;
                   glutTimerFunc(10,movimientoPelota,1);
@@ -718,6 +736,7 @@ void render(){
   }
 
   if(!moviendose) dibujarTexto(2);
+  if(pausado) dibujarTexto(3);
 
   if(destruidos < 35 && !gameOver){
     //------------- Dibujamos PLATAFORMA -------------          
@@ -757,6 +776,7 @@ int main (int argc, char** argv) {
 
     glutSpecialFunc(handleSpecialKeypress);
     glutSpecialUpFunc(handleSpecialKeyReleased);
+    glutKeyboardFunc(controlKey);
     
     glutMainLoop();
 
