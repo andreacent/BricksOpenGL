@@ -385,8 +385,8 @@ void dibujarPelota(float r) {
           ySpeed = -ySpeed;
           pelota[1] += radioP;
       }
-      else if (pow((plataforma-tam-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2)
-              || pow((tam+plataforma-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2))
+      else if ((pow((plataforma-tam-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2))
+              || (pow((tam+plataforma-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2)))
       {//esquinas
           xSpeed = -xSpeed;
           ySpeed = -ySpeed;
@@ -479,53 +479,43 @@ void dibujarBloqueRoto(float cx, float cy){
   glLineWidth(2.0);
 }
 
-bool hayChoque(float x, float y, bool esEspecial){
-    bool choca = false;
-    bool esEsquina = false;
+bool hayChoque(GLfloat x, GLfloat y, bool esEspecial){
+  bool choca = false;
 
-    if (pelota[0]-radioP <= x+lb && pelota[0]-radioP > x 
-        && pelota[1] <= y && pelota[1] >= y-ab) {// choca del lado der del bloque
-      xSpeed = -xSpeed;
-      pelota[0] = x + lb + radioP;
-      choca = true;
-    }
-    else if (pelota[0]+radioP >= x && pelota[0]+radioP < x +lb 
-        && pelota[1] <= y && pelota[1] >= y-ab) {// choca del lado izq del bloque
-      xSpeed = -xSpeed;
-      pelota[0] = x - radioP;
-      choca = true;
-    }
-    else if (pelota[0] >= x && pelota[0] < x+lb && y >= pelota[1]-radioP 
-        && pelota[1]-radioP >= y-ab) {//  choca de la parte de arriba del bloque
+  if (pelota[0]-radioP <= x+lb && pelota[0]-radioP > x 
+      && pelota[1] <= y && pelota[1] >= y-ab) {// choca del lado der del bloque
+    xSpeed = -xSpeed;
+    pelota[0] = x + lb + radioP;
+    choca = true;
+  }
+  else if (pelota[0]+radioP >= x && pelota[0]+radioP < x +lb 
+      && pelota[1] <= y && pelota[1] >= y-ab) {// choca del lado izq del bloque
+    xSpeed = -xSpeed;
+    pelota[0] = x - radioP;
+    choca = true;
+  }
+  else if (pelota[0] >= x && pelota[0] < x+lb && y >= pelota[1]-radioP 
+      && pelota[1]-radioP >= y-ab) {//  choca de la parte de arriba del bloque
+    ySpeed = -ySpeed;
+    pelota[1] = y + radioP;
+    choca = true;
+  } 
+  else if (x <= pelota[0] && pelota[0] <= x+lb &&  pelota[1]+radioP <= y 
+      && y-ab <= pelota[1]+radioP) {// choca de la parte de abajo del bloque
+    ySpeed = -ySpeed;
+    pelota[1] = y - ab - radioP;
+    choca = true;
+  }
+  else if ( ( x-radioP+20.0 == pelota[0] && y+radioP+20.0 == pelota[1])  // choca con esquina sup izq
+          || (x+lb+radioP+20.0 == pelota[0] && y+radioP+20.0 == pelota[1])// choca con la esquina sup der
+          || (x+lb+radioP+20.0 == pelota[0] && y-ab-radioP+ 20.0 == pelota[1]) // choca con la esquina inf der
+          || (x-radioP+20.0 == pelota[0] && y-ab-radioP+20.0 == pelota[1])) // choca con la esquina inf izq
+  { 
       ySpeed = -ySpeed;
-      pelota[1] = y + radioP;
+      xSpeed = -xSpeed;
       choca = true;
-    } 
-    else if (x <= pelota[0] && pelota[0] <= x+lb &&  pelota[1]+radioP <= y 
-        && y-ab <= pelota[1]+radioP) {// choca de la parte de abajo del bloque
-      ySpeed = -ySpeed;
-      pelota[1] = y - ab - radioP;
-      choca = true;
-    }
-
-    while(( pow ((x-pelota[0]),2) + pow(y-pelota[1],2) == pow (radioP,2)) //esquina sup izq bloque
-         || (pow((x+lb-pelota[0]),2) + pow (y-pelota[1],2) == pow(radioP,2)) //esquina sup der bloque
-         || (pow ((x-pelota[0]),2) + pow(y-ab-pelota[1],2) == pow (radioP,2)) //esquina inf izq bloque
-         || (pow((x+lb-pelota[0]),2) + pow (y-ab-pelota[1],2) == pow(radioP,2))) //esquina inf der bloque
-    {
-      if(!esEsquina){
-          xSpeed = -xSpeed;
-          ySpeed = -ySpeed;
-          choca = true;
-          esEsquina =true;
-      }else{
-        pelota[0] += xSpeed;
-        pelota[1] += ySpeed;
-      }
-      printf("si pasa\n");          
-    }
-
-    return choca;
+  }
+  return choca;
 }
 
 void dibujarBloques() {
