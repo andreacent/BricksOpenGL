@@ -381,7 +381,7 @@ void dibujarPelota(float r) {
           pelota[0] += (-tam-plataforma-radioP);        
       }
       else if (plataforma-tam <= pelota[0] && pelota[0] <= tam+plataforma
-              && pelota[1] - radioP <= -0.3){ //arriba
+              && pelota[1]-radioP <= -0.3 && pelota[1] > -0.3 ){ //arriba
           ySpeed = -ySpeed;
           pelota[1] += radioP;
       }
@@ -649,7 +649,14 @@ void handleSpecialKeypress(int key, int x, int y) {
         case GLUT_KEY_LEFT:
             isLeftKeyPressed = true;
             if (!isRightKeyPressed) {
-                if(!pausado) plataforma -= vp;
+                if(!pausado){
+                  plataforma -= vp;
+                  if(pelota[0]+radioP == plataforma-tam
+                    && pelota[1] <= -0.3 && pelota[1] > -0.6){ //lado izq de la plataforma
+                      pelota[1] -= ySpeed;
+                      pelota[0] -= (-tam+plataforma-radioP);
+                  }
+                }
                 if (!moviendose){
                   anguloP = 95 + rand()% 25;
                   glutTimerFunc(10,movimientoPelota,1);
@@ -660,7 +667,14 @@ void handleSpecialKeypress(int key, int x, int y) {
         case GLUT_KEY_RIGHT:
             isRightKeyPressed = true;
             if (!isLeftKeyPressed) {
-                if(!pausado) plataforma += vp;
+                if(!pausado){
+                  plataforma += vp;
+                  if(pelota[0]-radioP == tam+plataforma 
+                    && pelota[1] <= -0.3 && pelota[1] > -0.6){ //lado der de plataforma
+                      pelota[1] -= ySpeed;
+                      pelota[0] += (-tam-plataforma-radioP);        
+                  }
+                }
                 if (!moviendose){
                   anguloP = 40 + rand()% 39;
                   glutTimerFunc(10,movimientoPelota,1);
