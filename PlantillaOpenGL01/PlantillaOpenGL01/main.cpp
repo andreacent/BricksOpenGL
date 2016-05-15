@@ -481,6 +481,7 @@ void dibujarBloqueRoto(float cx, float cy){
 
 bool hayChoque(float x, float y, bool esEspecial){
     bool choca = false;
+    bool esEsquina = false;
 
     if (pelota[0]-radioP <= x+lb && pelota[0]-radioP > x 
         && pelota[1] <= y && pelota[1] >= y-ab) {// choca del lado der del bloque
@@ -506,18 +507,22 @@ bool hayChoque(float x, float y, bool esEspecial){
       pelota[1] = y - ab - radioP;
       choca = true;
     }
-    else if(( pow ((x-pelota[0]),2) + pow(y-pelota[1],2) == pow (radioP,2))     //esquina sup izq bloque
-           || (pow((x+lb-pelota[0]),2) + pow (y-pelota[1],2) == pow(radioP,2))){//esquina sup der bloque
-      ySpeed = -ySpeed;
-      xSpeed = -xSpeed;
-      choca = true;
-    }
 
-    else if (( pow ((x-pelota[0]),2) + pow(y-ab-pelota[1],2) == pow (radioP,2))      //esquina inf izq bloque
-            || (pow((x+lb-pelota[0]),2) + pow (y-ab-pelota[1],2) == pow(radioP,2))) {//esquina inf der bloque
-      xSpeed = -xSpeed;
-      ySpeed = -ySpeed;
-      choca = true;
+    while(( pow ((x-pelota[0]),2) + pow(y-pelota[1],2) == pow (radioP,2)) //esquina sup izq bloque
+         || (pow((x+lb-pelota[0]),2) + pow (y-pelota[1],2) == pow(radioP,2)) //esquina sup der bloque
+         || (pow ((x-pelota[0]),2) + pow(y-ab-pelota[1],2) == pow (radioP,2)) //esquina inf izq bloque
+         || (pow((x+lb-pelota[0]),2) + pow (y-ab-pelota[1],2) == pow(radioP,2))) //esquina inf der bloque
+    {
+      if(!esEsquina){
+          xSpeed = -xSpeed;
+          ySpeed = -ySpeed;
+          choca = true;
+          esEsquina =true;
+      }else{
+        pelota[0] += xSpeed;
+        pelota[1] += ySpeed;
+      }
+      printf("si pasa\n");          
     }
 
     return choca;
