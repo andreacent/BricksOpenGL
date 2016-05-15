@@ -19,17 +19,15 @@ using namespace std;
 #define PI 3.14159265358979f
 #define lb 1.9    // largo del bloque
 #define ab 0.5    // altura del bloque
-#define vp 0.2    // velocidad con la que se mueve la plataforma
+#define vp 0.3    // velocidad con la que se mueve la plataforma
 #define vb 0.014  // velocidad con la que caen los bonos
-#define ve 0.008   // velocidad de la explosion
+#define ve 0.008  // velocidad de la explosion
 #define cbe 5     // cantidad de bloques especiales
 #define cbb 6     // cantidad de bloques con bonus
-#define cpb 8    // cantidad de pedazos cuando se rompe bloque
+#define cpb 8     // cantidad de pedazos cuando se rompe bloque
 
 bool isLeftKeyPressed = false, isRightKeyPressed = false,
      inicial = true,        //true para inicializar los bonus y especiales una sola vez
-     velocidad = false,     //bonus de velocidad activado o desactivado
-     baseLarga = false,     //bonus de base activado o desactivado
      moviendose = false,    //true si la pelota comienza a moverse
      gameOver = false;      
 
@@ -122,7 +120,7 @@ void dibujarTexto(int n) {
   const char* bitmap_font_names[3] = {
     "¡FELICIDADES!",
     "PERDISTE",  
-    "Usa las flechas para comenzar",
+    "Usa las flechas para comenzar ",
   };
 
   glColor3f(0.0,0.0,1.0);
@@ -284,12 +282,9 @@ void dibujarBonusVelocidad(float x, float y, int bono){
     || (y-0.6 <= -0.3 && tam+plataforma <= x+0.6 && tam+plataforma >= x+0.5))   
   {
     printf("bonus Velocidad\n");
-    if(!velocidad){
-      velocidad = true;
-      velocidadP += velocidadP*0.4; // aumenta velocidad 40%
-      xSpeed += xSpeed*0.4;
-      ySpeed += ySpeed*0.4;
-    }
+    velocidadP += velocidadP*0.4; // aumenta velocidad 40%
+    xSpeed += xSpeed*0.4;
+    ySpeed += ySpeed*0.4;
     posBonus[bono][1] = -10;
   }
 }
@@ -310,10 +305,7 @@ void dibujarBonusTamBase(float x, float y, int bono){
     // Colision con la plataforma
     if(-tam+plataforma <= x+1.0 && tam+plataforma >= x+0.2 && y-0.4 <= -0.3){
       printf("bonus TamBase\n");
-      if(!baseLarga){
-        tam -= tam*0.15;   // disminuyes tam 15%
-        baseLarga = true;
-      }
+      tam -= tam*0.15;   // disminuyes tam 15%
       posBonus[bono][1] = -10;
     }
 }
