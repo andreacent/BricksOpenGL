@@ -24,16 +24,17 @@ using namespace std;
 #define ve 0.008  // velocidad de la explosion
 #define cbe 5     // cantidad de bloques especiales
 #define cbb 6     // cantidad de bloques con bonus
-#define cpb 8     // cantidad de pedazos cuando se rompe bloque
+#define cpb 8    // cantidad de pedazos cuando se rompe bloque
 
 bool isLeftKeyPressed = false, isRightKeyPressed = false,
      inicial = true,        //true para inicializar los bonus y especiales una sola vez
      moviendose = false,    //true si la pelota comienza a moverse
-     pausado = false,       
+     pausado = false,    
      gameOver = false;      
 
 float // variables para cuando el bloque se rompe
-      posInicial[cpb][2] = {{0.1,0.1},{0,0},{0,0.1},{0.1,0},{0.1,-0.1},{0,0},{0,0.1},{0.1,0.1}}, 
+      posInicial[cpb][2] = {{0.1,0.1},{0,0},{0,0.1},{0.1,0},
+                            {0.1,-0.1},{0,0},{0,0.1},{0.1,0.1}}, 
       posBonus[cbb][2] = {},       //posicion de los bonos
       posEspeciales[cbe][3] = {},  //posicion de los bonos y suma
       // PLATAFORMA
@@ -339,10 +340,6 @@ void dibujarPlataforma(){
 void dibujarPelota(float r) {
   glLineWidth(1.0);
   glPushMatrix();
-    if (moviendose && !pausado && velocidadP > 0.0){
-      pelota[0] = pelota[0] + xSpeed*velocidadP*cos(anguloP);
-      pelota[1] = pelota[1] + ySpeed*velocidadP*sin(anguloP);
-    }
     glTranslatef(0.0,-8.2,0.0); 
     glColor3f(1.0,1.0,1.0);
     glPointSize(3.0);
@@ -351,73 +348,53 @@ void dibujarPelota(float r) {
             glVertex2f(r*cos(angulo) + pelota[0],r*sin(angulo) + pelota[1]);
         }
     glEnd();
-
-    if(!pausado && moviendose){
-        pelota[0] += xSpeed;
-        pelota[1] += ySpeed;
-    
-        // Colision con paredes
-        if (pelota[0] + radioP >= 8.9){    
-          pelota[0] = 8.9 - radioP;
-          xSpeed = -xSpeed;
-        }
-        else if(pelota[0] - radioP <= -8.9){
-          pelota[0] = -8.9 + radioP;
-          xSpeed = -xSpeed;
-        }
-    
-        else if (pelota[1] + radioP >= 17.1){
-          pelota[1] = 17.1 - radioP;
-          ySpeed = -ySpeed;
-        }
-        pelota[0] = pelota[0] + xSpeed*velocidadP*cos(anguloP);
-        pelota[1] = pelota[1] + ySpeed*velocidadP*sin(anguloP);
-    
-        // Colision con la plataforma
-        
-        if ((-tam+plataforma <= pelota[0]) && (pelota[0] <= tam+plataforma)
-            && (pelota[1] - radioP <= -0.3)){
-            ySpeed = -ySpeed;
-            pelota[1] += radioP;
-        }
-    
-        else if ((pelota[0] + radioP >= -tam+plataforma) && (pelota[0] + radioP < tam+plataforma)
-            && (pelota[1] <= -0.3) && (pelota[1] >= -0.8)){
-            xSpeed = -xSpeed;
-            pelota[0] = -tam+plataforma -radioP;
-        }
-    
-        else if ((pelota[0] - radioP <= tam+plataforma) && (pelota[0] - radioP > -tam+plataforma)
-            && (pelota[1] <= -0.3) && (pelota[1] >= -0.8)){
-            xSpeed = -xSpeed;
-            pelota[0] = tam+plataforma + radioP;
-        }
-        else if (pow((-tam+plataforma-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2)){
-            ySpeed = -ySpeed;
-            pelota[1] += radioP;
-        }
-        else if (pow((tam+plataforma-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2)){
-            ySpeed = -ySpeed;
-            pelota[1] += radioP;
-        }
-        else if (pow((tam+plataforma-pelota[0]),2) + pow(-0.8-pelota[1],2) <= pow(radioP,2)){
-            xSpeed = -xSpeed;
-            pelota[0] += radioP;
-        }
-        else if (pow((-tam+plataforma-pelota[0]),2) + pow(-0.8-pelota[1],2) <= pow(radioP,2)){
-            xSpeed = -xSpeed;
-            pelota[0] += radioP;
-        }
-        // El jugador pierde
-        else if(pelota[1] < -0.6) gameOver = true;        
-    
-        pelota[0] = pelota[0] + xSpeed*velocidadP*cos(anguloP);
-        pelota[1] = pelota[1] + ySpeed*velocidadP*sin(anguloP);
-    }
-
   glPopMatrix();
-
   glLineWidth(2.0);
+
+  //revisamos colisiones
+  if(!pausado && moviendose){
+      pelota[0] += xSpeed;
+      pelota[1] += ySpeed;
+        
+      // Colision con paredes
+      if (pelota[0] + radioP >= 8.9){    
+        pelota[0] = 8.9 - radioP;
+        xSpeed = -xSpeed;
+      }
+      else if(pelota[0] - radioP <= -8.9){
+        pelota[0] = -8.9 + radioP;
+        xSpeed = -xSpeed;
+      }
+      else if (pelota[1] + radioP >= 17.1){
+        pelota[1] = 17.1 - radioP;
+        ySpeed = -ySpeed;
+      }    
+      // Colision con la plataforma  
+      else if(pelota[0]+radioP == plataforma-tam
+             && pelota[1] <= -0.3 && pelota[1] > -0.6){ //lado izq de la plataforma
+          pelota[0] -= xSpeed;
+          pelota[0] -= (-tam+plataforma-radioP);
+      }
+      else if(pelota[0]-radioP == tam+plataforma 
+             && pelota[1] <= -0.3 && pelota[1] > -0.6){ //lado der de plataforma
+          pelota[0] -= xSpeed;
+          pelota[0] += (-tam-plataforma-radioP);        
+      }
+      else if (plataforma-tam <= pelota[0] && pelota[0] <= tam+plataforma
+              && pelota[1] - radioP <= -0.3){ //arriba
+          ySpeed = -ySpeed;
+          pelota[1] += radioP;
+      }
+      else if (pow((plataforma-tam-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2)
+              || pow((tam+plataforma-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2))
+      {//esquinas
+          xSpeed = -xSpeed;
+          ySpeed = -ySpeed;
+          pelota[1] += radioP;
+      }
+      // El jugador pierde
+      else if(pelota[1] < -1) gameOver = true;     
+  }
 }
 
 void dibujarMarcoVerde() { 
@@ -502,45 +479,46 @@ void dibujarBloqueRoto(float cx, float cy){
   glLineWidth(2.0);
 }
 
-bool hayChoque(float x, float y){
+bool hayChoque(float x, float y, bool esEspecial){
     bool choca = false;
-    float px = pelota[0], py = pelota[1];
 
-    if (px-radioP <= x+lb && px-radioP > x && py <= y && py >= y-ab) {// choca del lado der del bloque
+    if (pelota[0]-radioP <= x+lb && pelota[0]-radioP > x 
+        && pelota[1] <= y && pelota[1] >= y-ab) {// choca del lado der del bloque
       xSpeed = -xSpeed;
-      px = x + lb + radioP;
+      pelota[0] = x + lb + radioP;
       choca = true;
     }
-    else if (px+radioP >= x && px+radioP < x +lb && py <= y && py >= y-ab) {// choca del lado izq del bloque
+    else if (pelota[0]+radioP >= x && pelota[0]+radioP < x +lb 
+        && pelota[1] <= y && pelota[1] >= y-ab) {// choca del lado izq del bloque
       xSpeed = -xSpeed;
-      px = x - radioP;
+      pelota[0] = x - radioP;
       choca = true;
     }
-    else if (px >= x && px < x+lb && y >= py-radioP && py-radioP >= y-ab) {//  choca de la parte de arriba del bloque
+    else if (pelota[0] >= x && pelota[0] < x+lb && y >= pelota[1]-radioP 
+        && pelota[1]-radioP >= y-ab) {//  choca de la parte de arriba del bloque
       ySpeed = -ySpeed;
-      py = y + radioP;
+      pelota[1] = y + radioP;
       choca = true;
     } 
-    else if (x <= px && px <= x+lb &&  py+radioP <= y && y-ab <= py+radioP) {// choca de la parte de abajo del bloque
+    else if (x <= pelota[0] && pelota[0] <= x+lb &&  pelota[1]+radioP <= y 
+        && y-ab <= pelota[1]+radioP) {// choca de la parte de abajo del bloque
       ySpeed = -ySpeed;
-      py = y - ab - radioP;
+      pelota[1] = y - ab - radioP;
       choca = true;
     }
-    else if(( pow ((x-px),2) + pow(y-py,2) == pow (radioP,2))         //  choca con la esquina sup izq bloque
-           || (pow((x+lb-px),2) + pow (y-py,2) == pow(radioP,2))){  //  choca con la esquina sup der bloque
+    else if(( pow ((x-pelota[0]),2) + pow(y-pelota[1],2) == pow (radioP,2))     //esquina sup izq bloque
+           || (pow((x+lb-pelota[0]),2) + pow (y-pelota[1],2) == pow(radioP,2))){//esquina sup der bloque
       ySpeed = -ySpeed;
       xSpeed = -xSpeed;
       choca = true;
     }
 
-    else if (( pow ((x-px),2) + pow(y-ab-py,2) == pow (radioP,2))          //  choca con la esquina inf izq bloque
-            || (pow((x+lb-px),2) + pow (y-ab-py,2) == pow(radioP,2))) {//  choca con la esquina inf der bloque
+    else if (( pow ((x-pelota[0]),2) + pow(y-ab-pelota[1],2) == pow (radioP,2))      //esquina inf izq bloque
+            || (pow((x+lb-pelota[0]),2) + pow (y-ab-pelota[1],2) == pow(radioP,2))) {//esquina inf der bloque
       xSpeed = -xSpeed;
       ySpeed = -ySpeed;
       choca = true;
     }
-    pelota[0] = pelota[0] + xSpeed*velocidadP*cos(anguloP);
-    pelota[1] = pelota[1] + ySpeed*velocidadP*sin(anguloP);
 
     return choca;
 }
@@ -555,11 +533,11 @@ void dibujarBloques() {
     for (int i = 0; i < 5; i++){
       for (int j = 0;j < 7;j++){
 
-        if (bloques[i][j] > -1){
-          if(hayChoque(cx,cy)) bloques[i][j] +=1; //revisa si hay un choque
-        }              
-
         esEspecial = buscarEspeciales(i*7+j);
+
+        if (bloques[i][j] > -1){
+          if(hayChoque(cx,cy,esEspecial)) bloques[i][j] +=1; //revisa si hay un choque
+        }              
 
         switch (bloques[i][j]) {
           case -1: //bloque eliminado 
@@ -741,10 +719,10 @@ void render(){
   if(destruidos < 35 && !gameOver){
     //------------- Dibujamos PLATAFORMA -------------          
         dibujarPlataforma();
-    //------------- Dibujamos PELOTA -------------
-        dibujarPelota(0.3);
     //------------- Dibujamos MARCO -------------
         dibujarMarcoVerde();
+    //------------- Dibujamos PELOTA -------------
+        dibujarPelota(0.3);
     //------------- Dibujamos BLOQUES -------------
         dibujarBloques();
   }else{
