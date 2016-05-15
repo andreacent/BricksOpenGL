@@ -32,7 +32,7 @@ bool isLeftKeyPressed = false, isRightKeyPressed = false,
      gameOver = false;      
 
 float // variables para cuando el bloque se rompe
-      posInicial[8][2] = {{1,0},{0,0},{0,1},{0,0},{1,0},{1,0},{1,0},{0,0}}, 
+      posInicial[8][2] = {{1,0},{0,0},{0,-1},{2,0},{1,0},{2,0},{1,0},{0,0}}, 
       anguloPedazos[8] = {-330,-280,-90,-180,220,-60,320,-100},
       posBonus[6][2],       //posicion de los bonos
       posEspeciales[5][3],  //posicion de los bonos y suma
