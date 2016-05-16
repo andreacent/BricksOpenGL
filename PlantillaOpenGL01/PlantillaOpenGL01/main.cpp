@@ -498,13 +498,13 @@ bool hayChoque(float x, float y, bool esEspecial){
     } 
     else if(pow ((x-pelota[0]),2) + pow(y-ab-pelota[1],2) <= pow (radioP,2)){// choca con la esquina inf der
         if(pelota[1] <= y-ab) ySpeed = -ySpeed; //abajo
-        if(pelota[0] <= x) xSpeed = -xSpeed; //der
+        if(x+lb <= pelota[0]) xSpeed = -xSpeed; //izq
         choca = true;
         printf("esquina inf der\n");
     } 
-    else if(pow((x+lb-pelota[0]),2) + pow (y-ab-pelota[1],2) <= pow(radioP,2)){// choca con la esquina inf izq
+    else if(pow((x+lb-pelota[0]),2) + pow (y-ab-pelota[1],2) <= pow(radioP,2)){// choca con la esquina inf der
         if(pelota[1] <= y-ab) ySpeed = -ySpeed; //abajo
-        if(x+lb <= pelota[0]) xSpeed = -xSpeed; //izq
+        if(pelota[0] <= x) xSpeed = -xSpeed; //der
         choca = true;
         printf("esquina inf izq\n");
     } 
