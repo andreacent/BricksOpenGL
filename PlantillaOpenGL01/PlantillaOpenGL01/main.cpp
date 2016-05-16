@@ -289,7 +289,6 @@ void dibujarBonusVelocidad(float x, float y, int bono){
     || (y-0.6 <= -0.3 && tam+plataforma >= x+0.3 && -tam+plataforma <= x+0.3) //(0.3,-0.6) dentro de la plataforma
     || (y-0.6 <= -0.3 && tam+plataforma <= x+0.6 && tam+plataforma >= x+0.5))   
   {
-    printf("bonus Velocidad\n");
     velocidadP += velocidadP*0.4; // aumenta velocidad 40%
     xSpeed += xSpeed*0.4;
     ySpeed += ySpeed*0.4;
@@ -374,13 +373,22 @@ void dibujarPelota(float r) {
         ySpeed = -ySpeed;
       }    
       // Colision con la plataforma      
-      else if ((pow((plataforma-tam-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2))
-              || (pow((tam+plataforma-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2)))
-      {//esquinas
-          xSpeed = -xSpeed;
-          ySpeed = -ySpeed;
-          pelota[1] += radioP;
-      }  
+      else if(pow((plataforma-tam-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2)){
+        if(ySpeed < 0.0 && xSpeed > 0.0){
+              ySpeed = -ySpeed;
+              xSpeed = -xSpeed;
+          }
+          else if(ySpeed < 0.0 && xSpeed < 0.0) ySpeed = -ySpeed;
+        //pelota[1] += radioP;
+      }
+      else if(pow((tam+plataforma-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2)){
+        if(ySpeed < 0.0 && xSpeed < 0.0){
+            ySpeed = -ySpeed;
+            xSpeed = -xSpeed;
+        }
+        else if(ySpeed < 0.0 && xSpeed > 0.0) ySpeed = -ySpeed; 
+        //pelota[1] += radioP;
+      }
       else if(pelota[0]+radioP >= plataforma-tam 
               && pelota[0]+radioP < plataforma
               && pelota[1] <= -0.3){ //la pelota choca con lado izq
@@ -495,7 +503,6 @@ bool hayChoque(float x, float y, bool esEspecial){
         else if(ySpeed < 0.0 && xSpeed < 0.0) ySpeed = -ySpeed;
         else if(ySpeed > 0.0 && xSpeed > 0.0) xSpeed = -xSpeed; 
         choca = true;
-        printf("esquina sup izq\n");
     } 
     else if(pow((x+lb-pelota[0]),2) + pow (y-pelota[1],2) <= pow(radioP,2)){// choca con la esquina sup der
         if(ySpeed < 0.0 && xSpeed < 0.0){
@@ -505,7 +512,6 @@ bool hayChoque(float x, float y, bool esEspecial){
         else if(ySpeed > 0.0 && xSpeed < 0.0) xSpeed = -xSpeed; 
         else if(ySpeed < 0.0 && xSpeed > 0.0) ySpeed = -ySpeed; 
         choca = true;
-        printf("esquina sup der\n");
     } 
     else if(pow ((x-pelota[0]),2) + pow(y-ab-pelota[1],2) <= pow (radioP,2)){// choca con la esquina inf izq
         if(ySpeed > 0.0 && xSpeed > 0.0){
@@ -515,7 +521,6 @@ bool hayChoque(float x, float y, bool esEspecial){
         else if(ySpeed > 0.0 && xSpeed < 0.0) ySpeed = -ySpeed; 
         else if(ySpeed < 0.0 && xSpeed > 0.0) xSpeed = -xSpeed; 
         choca = true;
-        printf("esquina inf der\n");
     } 
     else if(pow((x+lb-pelota[0]),2) + pow (y-ab-pelota[1],2) <= pow(radioP,2)){// choca con la esquina inf der
         if(ySpeed > 0.0 && xSpeed < 0.0){
@@ -525,35 +530,30 @@ bool hayChoque(float x, float y, bool esEspecial){
         else if(ySpeed < 0.0 && xSpeed < 0.0) xSpeed = -xSpeed; 
         else if(ySpeed > 0.0 && xSpeed > 0.0) ySpeed = -ySpeed; 
         choca = true;
-        printf("esquina inf izq\n");
     } 
     else if (pelota[0]-radioP <= x+lb && pelota[0]-radioP > x 
         && pelota[1] <= y && pelota[1] >= y-ab) {// choca del lado der del bloque
       xSpeed = -xSpeed;
       pelota[0] = x + lb + radioP;
       choca = true;
-      printf("der\n");
     }
     else if (pelota[0]+radioP >= x && pelota[0]+radioP < x +lb 
         && pelota[1] <= y && pelota[1] >= y-ab) {// choca del lado izq del bloque
       xSpeed = -xSpeed;
       pelota[0] = x - radioP;
       choca = true;
-      printf("izq\n");
     }
     else if (pelota[0] >= x && pelota[0] < x+lb && y >= pelota[1]-radioP 
         && pelota[1]-radioP >= y-ab) {//  choca de la parte de arriba del bloque
       ySpeed = -ySpeed;
       pelota[1] = y + radioP;
       choca = true;
-      printf("arriba\n");
     } 
     else if (x <= pelota[0] && pelota[0] <= x+lb &&  pelota[1]+radioP <= y 
         && y-ab <= pelota[1]+radioP) {// choca de la parte de abajo del bloque
       ySpeed = -ySpeed;
       pelota[1] = y - ab - radioP;
       choca = true;
-      printf("abajo\n");
     }
 
     return choca;
@@ -749,7 +749,7 @@ void render(){
   }
 
   if(!moviendose) dibujarTexto(2);
-  if(pausado) dibujarTexto(3);
+  if(!gameOver && pausado) dibujarTexto(3);
 
   if(destruidos < 35 && !gameOver){
     //------------- Dibujamos PLATAFORMA -------------          
