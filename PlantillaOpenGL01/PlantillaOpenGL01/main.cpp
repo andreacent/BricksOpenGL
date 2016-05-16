@@ -6,8 +6,7 @@
 #include <string.h>
 //#include <GL\glew.h>
 //#include <GL\freeglut.h>
-#include <GL/freeglut.h>
-#include <GL/gl.h>
+//#include <GL/gl.h>
 #include <GL/glut.h>
 
 using namespace std;
@@ -310,8 +309,8 @@ void dibujarBonusTamBase(float x, float y, int bono){
     glPopMatrix();
 
     // Colision con la plataforma
-    if((-tam+plataforma <= x+1.0 && tam+plataforma >= x+0.2 && y-0.4 <= -0.3)
-      || (-tam+plataforma <= x+0.2 && y-0.4 <= -0.3 && tam+plataforma >= x+1.0))
+    if((-tam+plataforma <= x+1.5 && tam+plataforma >= x+1.5 && y-0.4 <= -0.3 && y > -0.3)
+      || (-tam+plataforma <= x+0.2 && y-0.4 <= -0.3 && tam+plataforma >= x+0.2 && y > -0.3))
     {
       printf("bonus TamBase\n");
       tam -= tam*0.15;   // disminuyes tam 15%
