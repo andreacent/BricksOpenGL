@@ -311,7 +311,9 @@ void dibujarBonusTamBase(float x, float y, int bono){
     glPopMatrix();
 
     // Colision con la plataforma
-    if(-tam+plataforma <= x+1.0 && tam+plataforma >= x+0.2 && y-0.4 <= -0.3){
+    if((-tam+plataforma <= x+1.0 && tam+plataforma >= x+0.2 && y-0.4 <= -0.3)
+      || (-tam+plataforma <= x+0.2 && y-0.4 <= -0.3 && tam+plataforma >= x+1.0))
+    {
       printf("bonus TamBase\n");
       tam -= tam*0.15;   // disminuyes tam 15%
       posBonus[bono][1] = -10;
@@ -528,7 +530,7 @@ bool hayChoque(float x, float y, bool esEspecial){
         }
         else{
           if(pelota[1] >= y-ab) xSpeed = -xSpeed; //der
-          if(x+lb >= pelota[0])  ySpeed = -ySpeed; //abajo
+          if(x+lb >= pelota[0]) ySpeed = -ySpeed; //abajo
         }
         choca = true;
         printf("esquina inf izq\n");
