@@ -492,10 +492,8 @@ bool hayChoque(float x, float y, bool esEspecial){
             ySpeed = -ySpeed;
             xSpeed = -xSpeed;
         }
-        else{
-          if(pelota[1] <= y) xSpeed = -xSpeed; 
-          if(x <= pelota[0]) ySpeed = -ySpeed; 
-        }
+        else if(ySpeed < 0.0 && xSpeed < 0.0) ySpeed = -ySpeed;
+        else if(ySpeed > 0.0 && xSpeed > 0.0) xSpeed = -xSpeed; 
         choca = true;
         printf("esquina sup izq\n");
     } 
@@ -504,10 +502,8 @@ bool hayChoque(float x, float y, bool esEspecial){
             ySpeed = -ySpeed;
             xSpeed = -xSpeed;
         }
-        else{
-          if(pelota[1] <= y) xSpeed = -xSpeed; //der 
-          if(pelota[0] <= x+lb) ySpeed = -ySpeed; //arriba
-        }
+        else if(ySpeed > 0.0 && xSpeed < 0.0) xSpeed = -xSpeed; 
+        else if(ySpeed < 0.0 && xSpeed > 0.0) ySpeed = -ySpeed; 
         choca = true;
         printf("esquina sup der\n");
     } 
@@ -516,10 +512,8 @@ bool hayChoque(float x, float y, bool esEspecial){
             ySpeed = -ySpeed;
             xSpeed = -xSpeed;
         }
-        else{
-          if(pelota[1] >= y-ab) xSpeed = -xSpeed; 
-          if(x <= pelota[0])  ySpeed = -ySpeed; //abajo
-        }
+        else if(ySpeed > 0.0 && xSpeed < 0.0) ySpeed = -ySpeed; 
+        else if(ySpeed < 0.0 && xSpeed > 0.0) xSpeed = -xSpeed; 
         choca = true;
         printf("esquina inf der\n");
     } 
@@ -528,10 +522,8 @@ bool hayChoque(float x, float y, bool esEspecial){
             ySpeed = -ySpeed;
             xSpeed = -xSpeed;
         }
-        else{
-          if(pelota[1] >= y-ab) xSpeed = -xSpeed; //der
-          if(x+lb >= pelota[0]) ySpeed = -ySpeed; //abajo
-        }
+        else if(ySpeed < 0.0 && xSpeed < 0.0) xSpeed = -xSpeed; 
+        else if(ySpeed > 0.0 && xSpeed > 0.0) ySpeed = -ySpeed; 
         choca = true;
         printf("esquina inf izq\n");
     } 
