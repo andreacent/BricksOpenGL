@@ -485,34 +485,50 @@ bool hayChoque(float x, float y, bool esEspecial){
     bool esEsquina = false;
 
     if(pow ((x-pelota[0]),2) + pow(y-pelota[1],2) <= pow (radioP,2)){ // choca con esquina sup izq
-        if(pelota[1] >= y) ySpeed = -ySpeed; //arriba
-        else pelota[1] += ySpeed;
-        if(x+lb <= pelota[0]) xSpeed = -xSpeed; //izq
-        else pelota[0] += xSpeed;
+        if(ySpeed < 0.0 && xSpeed > 0.0){
+            ySpeed = -ySpeed;
+            xSpeed = -xSpeed;
+        }
+        else{
+          if(pelota[1] >= y) ySpeed = -ySpeed; 
+          if(x+lb <= pelota[0]) xSpeed = -xSpeed; 
+        }
         choca = true;
         printf("esquina sup izq\n");
     } 
     else if(pow((x+lb-pelota[0]),2) + pow (y-pelota[1],2) <= pow(radioP,2)){// choca con la esquina sup der
-        if(pelota[1] >= y) ySpeed = -ySpeed; //arriba
-        else pelota[1] += ySpeed;
-        if(pelota[0] <= x) xSpeed = -xSpeed; //der
-        else pelota[0] += xSpeed;
+        if(ySpeed < 0.0 && xSpeed < 0.0){
+            ySpeed = -ySpeed;
+            xSpeed = -xSpeed;
+        }
+        else{
+          if(pelota[1] >= y) ySpeed = -ySpeed; //arriba
+          if(pelota[0] <= x) xSpeed = -xSpeed; //der
+        }
         choca = true;
         printf("esquina sup der\n");
     } 
-    else if(pow ((x-pelota[0]),2) + pow(y-ab-pelota[1],2) <= pow (radioP,2)){// choca con la esquina inf der
-        if(pelota[1] <= y-ab) ySpeed = -ySpeed; //abajo
-        else pelota[1] += ySpeed;
-        if(x+lb <= pelota[0]) xSpeed = -xSpeed; //izq
-        else pelota[0] += xSpeed;
+    else if(pow ((x-pelota[0]),2) + pow(y-ab-pelota[1],2) <= pow (radioP,2)){// choca con la esquina inf izq
+       if(ySpeed > 0.0 && xSpeed > 0.0){
+            ySpeed = -ySpeed;
+            xSpeed = -xSpeed;
+        }
+        else{
+          if(pelota[1] <= y-ab) ySpeed = -ySpeed; //abajo
+          if(x+lb <= pelota[0]) xSpeed = -xSpeed; //izq
+        }
         choca = true;
         printf("esquina inf der\n");
     } 
     else if(pow((x+lb-pelota[0]),2) + pow (y-ab-pelota[1],2) <= pow(radioP,2)){// choca con la esquina inf der
-        if(pelota[1] <= y-ab) ySpeed = -ySpeed; //abajo
-        else pelota[1] += ySpeed;
-        if(pelota[0] <= x) xSpeed = -xSpeed; //der
-        else pelota[0] += xSpeed;
+        if(ySpeed > 0.0 && xSpeed < 0.0){
+            ySpeed = -ySpeed;
+            xSpeed = -xSpeed;
+        }
+        else{
+          if(pelota[1] <= y-ab) ySpeed = -ySpeed; //abajo
+          if(pelota[0] <= x) xSpeed = -xSpeed; //der
+        }
         choca = true;
         printf("esquina inf izq\n");
     } 
