@@ -126,17 +126,18 @@ void dibujarTexto(int n) {
   };
 
   glColor3f(0.0,0.0,1.0);
-  glRasterPos2f(-2,-9.0);
 
   switch (n) {
     case 0:
+      glRasterPos2f(-2,-9.0);
       imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[n]);   
     break;
     case 1:
+      glRasterPos2f(-1.5,-9.0);
       imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[n]);
     break;
     case 2:
-      glRasterPos2f(-4.5,8);
+      glRasterPos2f(-5.5,8);
       imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[n]);
     break;
     case 3:
@@ -653,7 +654,7 @@ void dibujarCara(){
       }
       else{
           dibujarTexto(0);
-          dibujarTexto(1);
+          glColor3f(1,1,0);
           glTranslatef(0,-0.5,0);
           glRotatef(180,0,0,1);
           glBegin(GL_POINTS);
