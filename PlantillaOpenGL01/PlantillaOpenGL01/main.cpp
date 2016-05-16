@@ -18,7 +18,7 @@ using namespace std;
 
 #define PI 3.14159265358979f
 #define lb 1.9    // largo del bloque
-#define ab 0.7    // altura del bloque
+#define ab 0.6    // altura del bloque
 #define vp 0.3    // velocidad con la que se mueve la plataforma
 #define vb 0.014  // velocidad con la que caen los bonos
 #define ve 0.008  // velocidad de la explosion
@@ -491,8 +491,8 @@ bool hayChoque(float x, float y, bool esEspecial){
             xSpeed = -xSpeed;
         }
         else{
-          if(pelota[1] >= y) ySpeed = -ySpeed; 
-          if(x+lb <= pelota[0]) xSpeed = -xSpeed; 
+          if(pelota[1] <= y) xSpeed = -xSpeed; 
+          if(x <= pelota[0]) ySpeed = -ySpeed; 
         }
         choca = true;
         printf("esquina sup izq\n");
@@ -503,20 +503,20 @@ bool hayChoque(float x, float y, bool esEspecial){
             xSpeed = -xSpeed;
         }
         else{
-          if(pelota[1] >= y) ySpeed = -ySpeed; //arriba
-          if(pelota[0] <= x) xSpeed = -xSpeed; //der
+          if(pelota[1] <= y) xSpeed = -xSpeed; //der 
+          if(pelota[0] <= x+lb) ySpeed = -ySpeed; //arriba
         }
         choca = true;
         printf("esquina sup der\n");
     } 
     else if(pow ((x-pelota[0]),2) + pow(y-ab-pelota[1],2) <= pow (radioP,2)){// choca con la esquina inf izq
-       if(ySpeed > 0.0 && xSpeed > 0.0){
+        if(ySpeed > 0.0 && xSpeed > 0.0){
             ySpeed = -ySpeed;
             xSpeed = -xSpeed;
         }
         else{
-          if(pelota[1] <= y-ab) ySpeed = -ySpeed; //abajo
-          if(x+lb <= pelota[0]) xSpeed = -xSpeed; //izq
+          if(pelota[1] >= y-ab) xSpeed = -xSpeed; 
+          if(x <= pelota[0])  ySpeed = -ySpeed; //abajo
         }
         choca = true;
         printf("esquina inf der\n");
@@ -527,8 +527,8 @@ bool hayChoque(float x, float y, bool esEspecial){
             xSpeed = -xSpeed;
         }
         else{
-          if(pelota[1] <= y-ab) ySpeed = -ySpeed; //abajo
-          if(pelota[0] <= x) xSpeed = -xSpeed; //der
+          if(pelota[1] >= y-ab) xSpeed = -xSpeed; //der
+          if(x+lb >= pelota[0])  ySpeed = -ySpeed; //abajo
         }
         choca = true;
         printf("esquina inf izq\n");
