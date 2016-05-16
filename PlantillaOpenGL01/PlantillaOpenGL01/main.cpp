@@ -485,16 +485,17 @@ bool hayChoque(float x, float y, bool esEspecial){
     bool choca = false;
     bool esEsquina = false;
 
-    if ( ( x-radioP+20.0 == pelota[0] && y+radioP+20.0 == pelota[1])  // choca con esquina sup izq
-          || (x+lb+radioP+20.0 == pelota[0] && y+radioP+20.0 == pelota[1])// choca con la esquina sup der
-          || (x+lb+radioP+20.0 == pelota[0] && y-ab-radioP+ 20.0 == pelota[1]) // choca con la esquina inf der
-          || (x-radioP+20.0 == pelota[0] && y-ab-radioP+20.0 == pelota[1])) // choca con la esquina inf izq
+    if(( pow ((x-pelota[0]),2) + pow(y-pelota[1],2) <= pow (radioP,2))  // choca con esquina sup izq
+      ||(pow((x+lb-pelota[0]),2) + pow (y-pelota[1],2) <= pow(radioP,2))// choca con la esquina sup der
+      ||(pow ((x-pelota[0]),2) + pow(y-ab-pelota[1],2) <= pow (radioP,2))  // choca con la esquina inf der
+      ||(pow((x+lb-pelota[0]),2) + pow (y-ab-pelota[1],2) <= pow(radioP,2))) // choca con la esquina inf izq
     { 
         ySpeed = -ySpeed;
         xSpeed = -xSpeed;
         choca = true;
         printf("esquina\n");
-    }
+    } 
+
     else if (pelota[0]-radioP <= x+lb && pelota[0]-radioP > x 
         && pelota[1] <= y && pelota[1] >= y-ab) {// choca del lado der del bloque
       xSpeed = -xSpeed;
