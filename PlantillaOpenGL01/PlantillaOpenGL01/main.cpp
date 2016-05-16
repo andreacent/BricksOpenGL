@@ -29,7 +29,7 @@ using namespace std;
 bool isLeftKeyPressed = false, isRightKeyPressed = false,
      inicial = true,        //true para inicializar los bonus y especiales una sola vez
      moviendose = false,    //true si la pelota comienza a moverse
-     pausado = false,    
+     pausado = false,   
      gameOver = false;      
 
 float // variables para cuando el bloque se rompe
@@ -51,7 +51,6 @@ int bloques[5][7] = {{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},
 GLfloat radioP = 0.3f;            // Radio de la pelota.
 GLfloat xSpeed = 0.08f;           // Velocidad en X y Direccion en Y.
 GLfloat ySpeed = 0.05f;
-GLfloat anguloP = 40.0f;          // Angulo con el que se mueve la pelota;
 GLfloat velocidadP = 0.00001;     // Velocidad de la pelota
 GLfloat pelota[2]  = {0.0f,0.0f}; // Centro de la pelota.
 
@@ -128,12 +127,13 @@ void dibujarTexto(int n) {
 
   glColor3f(0.0,0.0,1.0);
  
-  glRasterPos2f(-1.5,-5.0);
   switch (n) {
     case 0:
+      glRasterPos2f(-2,-9.0);
       imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[n]);   
     break;
     case 1:
+      glRasterPos2f(-1.5,-9.0);
       imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[n]);
     break;
     case 2:
@@ -356,8 +356,10 @@ void dibujarPelota(float r) {
       pelota[0] += xSpeed;
       pelota[1] += ySpeed;
         
+      // El jugador pierde
+      if(pelota[1] < -0.8) gameOver = true; 
       // Colision con paredes
-      if (pelota[0] + radioP >= 8.9){    
+      else if (pelota[0] + radioP >= 8.9){    
         pelota[0] = 8.9 - radioP;
         xSpeed = -xSpeed;
       }
@@ -370,15 +372,17 @@ void dibujarPelota(float r) {
         ySpeed = -ySpeed;
       }    
       // Colision con la plataforma  
-      else if(pelota[0]+radioP == plataforma-tam
-             && pelota[1] <= -0.3 && pelota[1] > -0.6){ //lado izq de la plataforma
-          pelota[0] -= xSpeed;
-          pelota[0] -= (-tam+plataforma-radioP);
+      else if(pelota[0]+radioP >= plataforma-tam 
+              && pelota[0]+radioP < plataforma
+              && pelota[1] <= -0.3){ //la pelota choca con lado izq
+          xSpeed = -xSpeed;
+          pelota[0] = -tam+plataforma-radioP;
       }
-      else if(pelota[0]-radioP == tam+plataforma 
-             && pelota[1] <= -0.3 && pelota[1] > -0.6){ //lado der de plataforma
-          pelota[0] -= xSpeed;
-          pelota[0] += (-tam-plataforma-radioP);        
+      else if(pelota[0]-radioP <= tam+plataforma 
+              && pelota[0]-radioP > plataforma 
+              && pelota[1] <= -0.3){//la pelota choca con lado der
+          xSpeed = -xSpeed;
+          pelota[0] = tam+plataforma+radioP;       
       }
       else if (plataforma-tam <= pelota[0] && pelota[0] <= tam+plataforma
               && pelota[1]-radioP <= -0.3 && pelota[1] > -0.3 ){ //arriba
@@ -391,9 +395,7 @@ void dibujarPelota(float r) {
           xSpeed = -xSpeed;
           ySpeed = -ySpeed;
           pelota[1] += radioP;
-      }
-      // El jugador pierde
-      else if(pelota[1] < -1) gameOver = true;     
+      }    
   }
 }
 
@@ -479,43 +481,50 @@ void dibujarBloqueRoto(float cx, float cy){
   glLineWidth(2.0);
 }
 
-bool hayChoque(GLfloat x, GLfloat y, bool esEspecial){
-  bool choca = false;
+bool hayChoque(float x, float y, bool esEspecial){
+    bool choca = false;
+    bool esEsquina = false;
 
-  if (pelota[0]-radioP <= x+lb && pelota[0]-radioP > x 
-      && pelota[1] <= y && pelota[1] >= y-ab) {// choca del lado der del bloque
-    xSpeed = -xSpeed;
-    pelota[0] = x + lb + radioP;
-    choca = true;
-  }
-  else if (pelota[0]+radioP >= x && pelota[0]+radioP < x +lb 
-      && pelota[1] <= y && pelota[1] >= y-ab) {// choca del lado izq del bloque
-    xSpeed = -xSpeed;
-    pelota[0] = x - radioP;
-    choca = true;
-  }
-  else if (pelota[0] >= x && pelota[0] < x+lb && y >= pelota[1]-radioP 
-      && pelota[1]-radioP >= y-ab) {//  choca de la parte de arriba del bloque
-    ySpeed = -ySpeed;
-    pelota[1] = y + radioP;
-    choca = true;
-  } 
-  else if (x <= pelota[0] && pelota[0] <= x+lb &&  pelota[1]+radioP <= y 
-      && y-ab <= pelota[1]+radioP) {// choca de la parte de abajo del bloque
-    ySpeed = -ySpeed;
-    pelota[1] = y - ab - radioP;
-    choca = true;
-  }
-  else if ( ( x-radioP+20.0 == pelota[0] && y+radioP+20.0 == pelota[1])  // choca con esquina sup izq
+    if ( ( x-radioP+20.0 == pelota[0] && y+radioP+20.0 == pelota[1])  // choca con esquina sup izq
           || (x+lb+radioP+20.0 == pelota[0] && y+radioP+20.0 == pelota[1])// choca con la esquina sup der
           || (x+lb+radioP+20.0 == pelota[0] && y-ab-radioP+ 20.0 == pelota[1]) // choca con la esquina inf der
           || (x-radioP+20.0 == pelota[0] && y-ab-radioP+20.0 == pelota[1])) // choca con la esquina inf izq
-  { 
-      ySpeed = -ySpeed;
+    { 
+        ySpeed = -ySpeed;
+        xSpeed = -xSpeed;
+        choca = true;
+        printf("esquina\n");
+    }
+    else if (pelota[0]-radioP <= x+lb && pelota[0]-radioP > x 
+        && pelota[1] <= y && pelota[1] >= y-ab) {// choca del lado der del bloque
       xSpeed = -xSpeed;
+      pelota[0] = x + lb + radioP;
       choca = true;
-  }
-  return choca;
+      printf("der\n");
+    }
+    else if (pelota[0]+radioP >= x && pelota[0]+radioP < x +lb 
+        && pelota[1] <= y && pelota[1] >= y-ab) {// choca del lado izq del bloque
+      xSpeed = -xSpeed;
+      pelota[0] = x - radioP;
+      choca = true;
+      printf("izq\n");
+    }
+    else if (pelota[0] >= x && pelota[0] < x+lb && y >= pelota[1]-radioP 
+        && pelota[1]-radioP >= y-ab) {//  choca de la parte de arriba del bloque
+      ySpeed = -ySpeed;
+      pelota[1] = y + radioP;
+      choca = true;
+      printf("arriba\n");
+    } 
+    else if (x <= pelota[0] && pelota[0] <= x+lb &&  pelota[1]+radioP <= y 
+        && y-ab <= pelota[1]+radioP) {// choca de la parte de abajo del bloque
+      ySpeed = -ySpeed;
+      pelota[1] = y - ab - radioP;
+      choca = true;
+      printf("abajo\n");
+    }
+
+    return choca;
 }
 
 void dibujarBloques() {
@@ -583,41 +592,41 @@ void dibujarCara(){
     float x,y;
     glColor3f(1,1,0);
     dibujarCirculo(0.0, 0.0, 6,0); // radio mas grandee
-
-    glPointSize(30.0);
     //ojos
+    glPointSize(30.0);
     glBegin(GL_POINTS);
-        glVertex2f(-2.3,2.3);
-        glVertex2f(2.3,2.3);
+      glVertex2f(-2.3,2.3);
+      glVertex2f(2.3,2.3);
     glEnd();
 
     glPointSize(2.0);
     glPushMatrix();
-    glScalef(0.8,0.8,0.8);
-
-    if(gameOver){
-        glTranslatef(0,-3.6,0);
-        glBegin(GL_POINTS);
-            for(double i=0.0; i<3; i+=0.001){
-                x=4*cos(i);
-                y=4*sin(i);
-                glVertex2f(x,y);
-            }
-        glEnd();
-        dibujarTexto(1);
-    }
-    else{
-        glTranslatef(0,-0.5,0);
-        glRotatef(180,0,0,1);
-        glBegin(GL_POINTS);
-            for(double i=0.0; i<3; i+=0.001){
-                x=4*cos(i);
-                y=4*sin(i);
-                glVertex2f(x,y);
-            }
-        glEnd();
-        dibujarTexto(0);
-    }
+      glScalef(0.8,0.8,0.8);
+      if(gameOver){
+          dibujarTexto(1);
+          glColor3f(1,1,0);
+          glTranslatef(0,-3.6,0);
+          glBegin(GL_POINTS);
+              for(double i=0.0; i<3; i+=0.001){
+                  x=4*cos(i);
+                  y=4*sin(i);
+                  glVertex2f(x,y);
+              }
+          glEnd();
+      }
+      else{
+          dibujarTexto(0);
+          dibujarTexto(1);
+          glTranslatef(0,-0.5,0);
+          glRotatef(180,0,0,1);
+          glBegin(GL_POINTS);
+              for(double i=0.0; i<3; i+=0.001){
+                  x=4*cos(i);
+                  y=4*sin(i);
+                  glVertex2f(x,y);
+              }
+          glEnd();
+      }
     glPopMatrix();
 }
 
@@ -625,8 +634,6 @@ void dibujarCara(){
 /************************* MOVIMIENTO *************************/
 void movimientoPelota(int h){
   if (h > 0){
-    pelota[0] = velocidadP*cos(anguloP)+ pelota[0];
-    pelota[1] = velocidadP*sin(anguloP)+ pelota[1];
     glutTimerFunc(10,movimientoPelota,1);
     glutPostRedisplay();
   }
@@ -644,42 +651,29 @@ void controlKey (unsigned char key, int xmouse, int ymouse){
     glutPostRedisplay(); 
 }
 
+void initMovmiento(){
+    glutTimerFunc(10,movimientoPelota,1);
+    moviendose = true;
+}
+
 void handleSpecialKeypress(int key, int x, int y) {
     switch (key) {
         case GLUT_KEY_LEFT:
             isLeftKeyPressed = true;
             if (!isRightKeyPressed) {
-                if(!pausado){
-                  plataforma -= vp;
-                  if(pelota[0]+radioP == plataforma-tam
-                    && pelota[1] <= -0.3 && pelota[1] > -0.6){ //lado izq de la plataforma
-                      pelota[1] -= ySpeed;
-                      pelota[0] -= (-tam+plataforma-radioP);
-                  }
+                if(!pausado) plataforma -= vp; 
+                if(!moviendose){
+                  initMovmiento();
+                  ySpeed = -ySpeed;
+                  xSpeed = -xSpeed;
                 }
-                if (!moviendose){
-                  anguloP = 95 + rand()% 25;
-                  glutTimerFunc(10,movimientoPelota,1);
-                  moviendose = true;
-                } 
             }
         break;
         case GLUT_KEY_RIGHT:
             isRightKeyPressed = true;
             if (!isLeftKeyPressed) {
-                if(!pausado){
-                  plataforma += vp;
-                  if(pelota[0]-radioP == tam+plataforma 
-                    && pelota[1] <= -0.3 && pelota[1] > -0.6){ //lado der de plataforma
-                      pelota[1] -= ySpeed;
-                      pelota[0] += (-tam-plataforma-radioP);        
-                  }
-                }
-                if (!moviendose){
-                  anguloP = 40 + rand()% 39;
-                  glutTimerFunc(10,movimientoPelota,1);
-                  moviendose = true;
-                } 
+                if(!pausado) plataforma += vp;
+                if(!moviendose) initMovmiento();
             }
         break;
         default:
