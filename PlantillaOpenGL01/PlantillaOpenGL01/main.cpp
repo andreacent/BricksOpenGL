@@ -121,19 +121,18 @@ void dibujarTexto(int n) {
   const char* bitmap_font_names[4] = {
     "¡FELICIDADES!",
     "PERDISTE",  
-    "Usa las flechas para comenzar",
+    "Usa las flechas <- y -> para comenzar",
     "Presiona Space para reanudar el juego",
   };
 
   glColor3f(0.0,0.0,1.0);
- 
+  glRasterPos2f(-2,-9.0);
+
   switch (n) {
     case 0:
-      glRasterPos2f(-2,-9.0);
       imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[n]);   
     break;
     case 1:
-      glRasterPos2f(-1.5,-9.0);
       imprimir_bitmap_string(bitmap_fonts[0], bitmap_font_names[n]);
     break;
     case 2:
@@ -371,7 +370,14 @@ void dibujarPelota(float r) {
         pelota[1] = 17.1 - radioP;
         ySpeed = -ySpeed;
       }    
-      // Colision con la plataforma  
+      // Colision con la plataforma      
+      else if ((pow((plataforma-tam-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2))
+              || (pow((tam+plataforma-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2)))
+      {//esquinas
+          xSpeed = -xSpeed;
+          ySpeed = -ySpeed;
+          pelota[1] += radioP;
+      }  
       else if(pelota[0]+radioP >= plataforma-tam 
               && pelota[0]+radioP < plataforma
               && pelota[1] <= -0.3){ //la pelota choca con lado izq
@@ -386,13 +392,6 @@ void dibujarPelota(float r) {
       }
       else if (plataforma-tam <= pelota[0] && pelota[0] <= tam+plataforma
               && pelota[1]-radioP <= -0.3 && pelota[1] > -0.3 ){ //arriba
-          ySpeed = -ySpeed;
-          pelota[1] += radioP;
-      }
-      else if ((pow((plataforma-tam-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2))
-              || (pow((tam+plataforma-pelota[0]),2) + pow(-0.3-pelota[1],2) <= pow(radioP,2)))
-      {//esquinas
-          xSpeed = -xSpeed;
           ySpeed = -ySpeed;
           pelota[1] += radioP;
       }    
@@ -485,17 +484,30 @@ bool hayChoque(float x, float y, bool esEspecial){
     bool choca = false;
     bool esEsquina = false;
 
-    if(( pow ((x-pelota[0]),2) + pow(y-pelota[1],2) <= pow (radioP,2))  // choca con esquina sup izq
-      ||(pow((x+lb-pelota[0]),2) + pow (y-pelota[1],2) <= pow(radioP,2))// choca con la esquina sup der
-      ||(pow ((x-pelota[0]),2) + pow(y-ab-pelota[1],2) <= pow (radioP,2))  // choca con la esquina inf der
-      ||(pow((x+lb-pelota[0]),2) + pow (y-ab-pelota[1],2) <= pow(radioP,2))) // choca con la esquina inf izq
-    { 
-        ySpeed = -ySpeed;
-        xSpeed = -xSpeed;
+    if(pow ((x-pelota[0]),2) + pow(y-pelota[1],2) <= pow (radioP,2)){ // choca con esquina sup izq
+        if(pelota[1] >= y) ySpeed = -ySpeed; //arriba
+        if(x+lb <= pelota[0]) xSpeed = -xSpeed; //izq
         choca = true;
-        printf("esquina\n");
+        printf("esquina sup izq\n");
     } 
-
+    else if(pow((x+lb-pelota[0]),2) + pow (y-pelota[1],2) <= pow(radioP,2)){// choca con la esquina sup der
+        if(pelota[1] >= y) ySpeed = -ySpeed; //arriba
+        if(pelota[0] <= x) xSpeed = -xSpeed; //der
+        choca = true;
+        printf("esquina sup der\n");
+    } 
+    else if(pow ((x-pelota[0]),2) + pow(y-ab-pelota[1],2) <= pow (radioP,2)){// choca con la esquina inf der
+        if(pelota[1] <= y-ab) ySpeed = -ySpeed; //abajo
+        if(pelota[0] <= x) xSpeed = -xSpeed; //der
+        choca = true;
+        printf("esquina inf der\n");
+    } 
+    else if(pow((x+lb-pelota[0]),2) + pow (y-ab-pelota[1],2) <= pow(radioP,2)){// choca con la esquina inf izq
+        if(pelota[1] <= y-ab) ySpeed = -ySpeed; //abajo
+        if(x+lb <= pelota[0]) xSpeed = -xSpeed; //izq
+        choca = true;
+        printf("esquina inf izq\n");
+    } 
     else if (pelota[0]-radioP <= x+lb && pelota[0]-radioP > x 
         && pelota[1] <= y && pelota[1] >= y-ab) {// choca del lado der del bloque
       xSpeed = -xSpeed;
@@ -731,8 +743,6 @@ void render(){
         dibujarBloques();
   }else{
     dibujarCara();
-    //printf("Puntos: %d\n", destruidos);
-    //glutLeaveMainLoop();
   }
 
   glFlush();
