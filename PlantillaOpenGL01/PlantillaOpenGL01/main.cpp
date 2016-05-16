@@ -18,7 +18,7 @@ using namespace std;
 
 #define PI 3.14159265358979f
 #define lb 1.9    // largo del bloque
-#define ab 0.6    // altura del bloque
+#define ab 0.5    // altura del bloque
 #define vp 0.3    // velocidad con la que se mueve la plataforma
 #define vb 0.014  // velocidad con la que caen los bonos
 #define ve 0.008  // velocidad de la explosion
