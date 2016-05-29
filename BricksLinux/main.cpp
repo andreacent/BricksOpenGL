@@ -4,9 +4,6 @@
 #include <ctime>
 #include <stdio.h>
 #include <string.h>
-//#include <GL\glew.h>
-//#include <GL\freeglut.h>
-//#include <GL/gl.h>
 #include <GL/glut.h>
 
 using namespace std;
@@ -15,7 +12,6 @@ using namespace std;
 #define DEF_floorGridXSteps 10.0f
 #define DEF_floorGridZSteps 10.0f
 
-#define PI 3.14159265358979f
 #define lb 1.9    // largo del bloque
 #define ab 0.5    // altura del bloque
 #define vp 0.3    // velocidad con la que se mueve la plataforma
@@ -356,7 +352,7 @@ void dibujarPelota(float r) {
       pelota[0] += xSpeed;
       pelota[1] += ySpeed;
         
-      // El jugador pierde
+      // El jugador M_PIerde
       if(pelota[1] < -0.8) gameOver = true; 
       // Colision con paredes
       else if (pelota[0] + radioP >= 8.9){    
@@ -618,7 +614,7 @@ void dibujarBloques() {
   glPopMatrix();
 }
 
-/************DIBUJA UNA CARA SI PIERDE O GANA************/
+/************DIBUJA UNA CARA SI M_PIERDE O GANA************/
 void dibujarCara(){
     float x,y;
     glColor3f(1,1,0);
@@ -777,12 +773,6 @@ int main (int argc, char** argv) {
     glutDisplayFunc(render);
 
     my_init();
-
-    //GLenum err = glewInit();
-    //if (GLEW_OK != err) {
-    //  printf(stderr, "GLEW error");
-    //  return 1;
-    //}
 
     glutSpecialFunc(handleSpecialKeypress);
     glutSpecialUpFunc(handleSpecialKeyReleased);
