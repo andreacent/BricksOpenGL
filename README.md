@@ -8,11 +8,12 @@ Usar barra espaciadora para pausar y reanudar el juego.<br />
 **Linux:** <br />
 
 Compilar:
-> cmake CMakeLists.txt <br />
+> cmake CMakeLists.txt
 > make
 
 Ejecutar:
 > ./Proyecto
 
 **Windows:** <br />
-Visual Studio 2012
+Usar Visual Studio 2012 <br />
+Descomprimir carpeta PlantillaOpenGL01.rar y reemplazar archivo main.cpp
