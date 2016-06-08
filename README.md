@@ -5,7 +5,7 @@ Proyecto II OpenGL
 Usar las flechas **<-** y **->** para iniciar el juego.<br />
 Usar barra espaciadora para pausar y reanudar el juego.<br />
 
-**Linux: **<br />
+**Linux:** <br />
 
 Compilar:
 > cmake CMakeLists.txt <br />
@@ -14,5 +14,5 @@ Compilar:
 Ejecutar:
 > ./Proyecto
 
-**Windows: **<br />
+**Windows:** <br />
 Visual Studio 2012
