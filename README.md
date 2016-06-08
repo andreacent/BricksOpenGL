@@ -8,7 +8,7 @@ Usar barra espaciadora para pausar y reanudar el juego.<br />
 **Linux:** <br />
 
 Compilar:
-> cmake CMakeLists.txt
+> cmake CMakeLists.txt <br />
 > make
 
 Ejecutar:
